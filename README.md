@@ -524,8 +524,9 @@ AGENT_IDENTITY_CLI=/path/to/agent-identity \
 ### GitLab CI 推送 GitHub
 
 仓库中的 [`.gitlab-ci.yml`](.gitlab-ci.yml) 会在 GitLab 默认分支或 Tag
-Pipeline 中，将相同 commit/Tag 推送到 GitHub。任务使用 `GIT_ASKPASS`，Token
-不会写入 remote URL，并且永远不 force push。
+Pipeline 中，将相同 commit/Tag 推送到 GitHub。任务通过进程级 Git HTTP
+Authorization Header 使用 Token；Token 不会写入 remote URL 或仓库配置，并且
+永远不 force push。
 
 在 GitLab **Settings > CI/CD > Variables** 配置：
 
