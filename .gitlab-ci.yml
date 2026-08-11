@@ -2,6 +2,10 @@ image:
   name: alpine/git:latest
   entrypoint: [""]
 
+default:
+  tags:
+    - eak-us
+
 stages:
   - sync
 
