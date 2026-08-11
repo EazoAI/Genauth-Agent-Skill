@@ -25,13 +25,14 @@ repeating completed writes.
 
 Resolve these non-secret values before the first write:
 
-- GenAuth HTTPS origin, OIDC Client ID, and user-pool ID;
-- requester/owner profile and a different approver profile;
+- GenAuth HTTPS origin; the CLI discovers its dedicated OIDC Client ID;
+- requester/owner profile and either a different approver profile or a
+  confirmed current user-pool root administrator self-approval path;
 - company Agent identifier, display name, purpose, application ID, and owner;
 - ResourceServer audience and exact GenAuth DataPolicy IDs;
 - Agent settings: authorization mode, Token TTL, UserGrant maximum TTL,
   Credential TTL/rotation overlap, redirect URIs, and realtime-decision choice;
-- authorization actor: member self, administrator target user, and explicit or
+- authorization actor: administrator target user and explicit or
   policy-permitted silent mode;
 - fixed Provider key, method, normalized path, and optional JSON body file.
 
@@ -40,21 +41,23 @@ Starter payloads are available at
 [`examples/company-agent.json`](examples/company-agent.json) and
 [`examples/agent-settings.json`](examples/agent-settings.json). Treat them as
 schemas, not defaults: replace every placeholder and confirm all security
-values. A member create must remove `owner_user_id`; an administrator create
-must set it.
+values. Administrator Agent creation must set `owner_user_id`.
 
 ## Phase 1: establish actor contexts
 
-Create or select named profiles. Both member and administrator login require a
-user pool:
+Create or select named administrator profiles. Do not ask for a Client ID or a
+user pool before the first browser login:
 
 ```bash
-genauth-agent auth login --profile-name agent-owner --endpoint <genauth-origin> --user-pool-id <pool> --client-id <client>
-genauth-agent auth login --profile-name agent-approver --admin --endpoint <genauth-origin> --user-pool-id <pool> --client-id <client>
+genauth-agent auth login --profile-name agent-owner --endpoint <genauth-origin>
+genauth-agent auth login --profile-name agent-approver --endpoint <genauth-origin>
 ```
 
-The exact login type depends on who owns the Agent; an administrator may be the
-owner, but must still use a different human/profile for approval. Verify every
+The only CLI login type is `tenant_admin`. If multiple manageable pools are
+returned, select one of those exact IDs and ensure every profile uses the same
+pool. Use a different human/profile for ordinary approval. Only the current user-pool root
+administrator may reuse the owner profile to approve their own request; the
+server verifies that role and self-rejection remains forbidden. Verify every
 profile with `--profile <name> auth status` and require the same selected pool.
 
 Checkpoint: profile names, subject IDs, login types, selected pool.
@@ -85,9 +88,8 @@ genauth-agent --profile agent-owner agents create \
 genauth-agent --profile agent-owner agents get --agent-id <agent-id> --output json --non-interactive
 ```
 
-Omit `--owner-user-id` for a member-owned Agent; the service binds ownership to
-that member. Recover `PARTIAL_AGENT_CREATE` exactly as documented in the shared
-recovery reference.
+Recover `PARTIAL_AGENT_CREATE` exactly as documented in the shared recovery
+reference.
 
 Checkpoint: Agent ID and fetched Capability draft `record_version`.
 
@@ -145,10 +147,10 @@ blockers before continuing.
 
 ## Phase 6: authorize the user
 
-For a member, use that member's profile, omit `--user-id`, and force explicit
-mode. For an administrator, an explicit request may select `--user-id`; silent
-mode additionally requires Agent policy, GenAuth eligibility, and a fresh
-confirmation before `--yes`.
+Use an administrator profile. An explicit request may select `--user-id`;
+silent mode additionally requires Agent policy, GenAuth eligibility, and a
+fresh confirmation before `--yes`. The target human completes explicit consent
+in the GenAuth browser and does not need a CLI member profile.
 
 ```bash
 genauth-agent --profile <authorization-profile> authorizations create \

@@ -41,16 +41,20 @@ Run:
 genauth-agent auth status
 ```
 
-If it returns exit `3`, ask the user to complete one of these flows themselves:
+If it returns exit `3`, ask the user to complete this browser flow themselves:
 
 ```bash
-genauth-agent auth login --endpoint <genauth-origin> --user-pool-id <pool> --client-id <oidc-client>
-genauth-agent auth login --admin --endpoint <genauth-origin> --user-pool-id <pool> --client-id <oidc-client>
+genauth-agent auth login --endpoint <genauth-origin> --profile-name <profile>
 ```
 
 Do not request, accept, or type a password. An existing session may be imported only through stdin with `--session-token-stdin`; never put a session Token on the command line.
 
-Both users and tenant administrators must have a selected user pool. To change an administrator context, use `auth select-user-pool`; never edit the local profile file directly.
+Tenant-administrator browser login is the only supported CLI login identity.
+The CLI discovers its OIDC Client ID from GenAuth; never ask the user for one or
+try a Console application ID as a fallback. Do not ask for a user pool before
+the first login attempt. After authentication, the CLI validates and selects a
+manageable user pool. To change that context, use `auth select-user-pool`;
+never edit the local profile file directly.
 
 ## Machine contract
 
@@ -86,5 +90,8 @@ Both users and tenant administrators must have a selected user pool. To change a
 
 - Permission IDs are GenAuth DataPolicy references. Do not rename them to OAuth scopes.
 - Agent Identity stores snapshots but GenAuth remains authoritative for current user, user-pool, and DataPolicy state.
-- Owner is not an approver and can never self-approve.
+- Ordinary owners/requesters cannot approve their own request. The current
+  user-pool root administrator is the only exception and may approve, but not
+  reject, their own request. This role is proven by GenAuth in signed actor
+  context; never infer it from a profile name, browser state, or user input.
 - Skills may skip a local prompt only after user confirmation; they cannot bypass server approval, silent-authorization policy, or revocation checks.

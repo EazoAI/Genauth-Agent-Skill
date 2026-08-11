@@ -46,14 +46,14 @@ a Provider host, a database, EAK Delegation, or Token Vault.
 
 | Capability | Description |
 | --- | --- |
-| Identity and user pool | Member and tenant-administrator login; both require an explicitly selected user pool |
-| Role profiles | Separate named profiles for owner/requester, approver, administrator, and member |
+| Identity and user pool | Tenant-administrator browser login only; the CLI discovers its OIDC client and selects a manageable pool after authentication |
+| Role profiles | Separate named administrator profiles for owner/requester, approver, and authorization operations |
 | Permission discovery | Resolve GenAuth DataPolicy definitions; Agent Identity stores snapshots only |
 | Agent management | Create and manage company Agents, Capability drafts, lifecycle, and readiness |
 | Approval | Submit frozen Capability or settings versions for a different administrator to decide |
 | Agent settings | Configure explicit/silent policy, Token TTL, UserGrant TTL, Credential TTL, redirect URIs, and realtime decisions |
 | Credential lifecycle | Create, rotate, and revoke Agent Credentials with secrets stored in the OS keychain |
-| User authorization | Members explicitly authorize themselves; administrators may target a user and request policy-allowed silent authorization |
+| User authorization | Administrators target a user; explicit consent is completed by that user in the GenAuth browser |
 | Token lifecycle | Agent Identity signs short-lived Agent Tokens; raw Tokens are hidden by default |
 | Provider call | Obtain a Token in-process and call an approved fixed Provider route only through GenAuth |
 | Revocation and diagnosis | Revoke a Credential, UserGrant, or Token JTI and diagnose each failure layer independently |
@@ -83,7 +83,7 @@ authorization, and secret-handling rules still apply.
 
 - macOS arm64/x64, Linux arm64/x64, or Windows x64.
 - Node.js and npm for the prebuilt CLI and Skill installer.
-- A reachable GenAuth HTTPS origin, OIDC Client ID, and target user-pool ID.
+- A reachable GenAuth HTTPS origin. The CLI discovers its dedicated OIDC Client ID.
 - Two different real identities when approval is required: an owner/requester
   and an approver.
 
@@ -185,19 +185,12 @@ Perform read-only checks only.
 
 ### 2. Log in
 
-Member example:
-
-```text
-Use the agent-identity-login Skill to log in as a member through GenAuth.
-Use user pool USER_POOL_ID, OIDC Client ID CLIENT_ID, and profile agent-owner.
-```
-
-Tenant-administrator example:
+Tenant-administrator login:
 
 ```text
 Use the agent-identity-login Skill to log in as a tenant administrator through
-GenAuth. Use user pool USER_POOL_ID, OIDC Client ID CLIENT_ID, and profile
-agent-approver.
+GenAuth at GENAUTH_ORIGIN. Use profile agent-owner. Do not ask me for a Client
+ID or user pool before opening the browser login.
 ```
 
 The AI agent may open or return a GenAuth login URL. Login is complete only
@@ -214,7 +207,7 @@ Use the agent-identity-user-journey Skill to complete this flow:
 - discover the DataPolicy for orders.read and let me confirm it;
 - use profile agent-approver for Capability and settings approval;
 - use explicit-only authorization and a 10-minute Token TTL;
-- authorize the current member;
+- explicitly authorize target user TARGET_USER_ID through the GenAuth browser;
 - call fixed Provider orders with GET /orders through GenAuth.
 
 Return a non-secret checkpoint after every phase. Pause for login, approval,
@@ -226,32 +219,19 @@ an Agent or authorization request merely because a previous session stopped.
 
 ## Authentication, user pools, and role profiles
 
-### Member login
-
-```bash
-genauth-agent auth login \
-  --profile-name agent-owner \
-  --endpoint https://genauth.example.com \
-  --user-pool-id USER_POOL_ID \
-  --client-id OIDC_CLIENT_ID
-```
-
-A member can explicitly authorize only themselves. A member cannot specify a
-different user and cannot request silent authorization.
-
 ### Tenant-administrator login
 
 ```bash
 genauth-agent auth login \
-  --profile-name agent-approver \
-  --admin \
-  --endpoint https://genauth.example.com \
-  --user-pool-id USER_POOL_ID \
-  --client-id OIDC_CLIENT_ID
+  --profile-name agent-owner \
+  --endpoint https://genauth.example.com
 ```
 
-A tenant administrator must also select a user pool. Pool changes are validated
-by the server:
+This is the only supported CLI login identity. The CLI discovers its dedicated
+root-user-pool application and does not accept `--admin` or `--client-id`.
+When the administrator owns exactly one pool it is selected automatically.
+With multiple pools, choose one returned by GenAuth and retry with
+`--user-pool-id`, or switch the validated context later:
 
 ```bash
 genauth-agent --profile agent-approver auth select-user-pool \
@@ -262,14 +242,15 @@ genauth-agent --profile agent-approver auth select-user-pool \
 
 | Profile | Identity | Responsibility |
 | --- | --- | --- |
-| `agent-owner` | Member or administrator | Create the Agent, manage Capability/settings, and create a Credential |
-| `agent-approver` | A different tenant administrator | Approve or reject Capability/settings changes |
+| `agent-owner` | Tenant administrator | Create the Agent, manage Capability/settings, and create a Credential |
+| `agent-approver` | Tenant administrator | Approve or reject Capability/settings changes; normally different from requester |
 | `agent-admin` | Tenant administrator | Target a user for explicit authorization or request policy-allowed silent authorization |
-| `agent-user-LABEL` | Member | Complete self explicit authorization |
 
-All profiles in one journey must intentionally select the same user pool. The
-owner/requester can never approve their own request. Every multi-role command
-must carry an explicit `--profile`; do not rely on a mutable default profile.
+All profiles in one journey must intentionally select the same user pool.
+Ordinary owners/requesters cannot approve their own request. Only the current
+user-pool root administrator may approve, but not reject, their own request;
+the server proves that role from trusted context. Every multi-role command must
+carry an explicit `--profile`; do not rely on a mutable default profile.
 
 ```bash
 genauth-agent --profile agent-owner auth status --output json --non-interactive
@@ -365,8 +346,10 @@ genauth-agent --profile agent-approver approvals approve \
   --output json --non-interactive
 ```
 
-The approver must fetch the frozen request using their own profile. The
-requester cannot supply trusted approval evidence on the approver's behalf.
+The decision actor must fetch the frozen request using their own explicit
+profile. A requester cannot supply trusted approval evidence on another
+approver's behalf. For root-administrator self-approval, GenAuth supplies the
+trusted role evidence; the CLI or requester cannot manufacture it.
 
 ### Configure Agent settings
 
@@ -387,21 +370,22 @@ require independent approval.
 ### Start explicit user authorization
 
 ```bash
-genauth-agent --profile agent-user-orders authorizations create \
+genauth-agent --profile agent-admin authorizations create \
   --agent-id AGENT_ID \
+  --user-id TARGET_USER_ID \
   --audience https://api.example.com/orders \
   --permission-id DATA_POLICY_ID \
   --mode explicit \
   --output json --non-interactive
 
-genauth-agent --profile agent-user-orders --timeout 10m \
+genauth-agent --profile agent-admin --timeout 10m \
   authorizations wait \
   --authorization-id AUTHORIZATION_ID \
   --output json --non-interactive
 ```
 
-An administrator may add `--user-id TARGET_USER_ID`. A member must not. Send
-only the returned `authorization_url` to the target human. GenAuth renders the
+Send only the returned `authorization_url` to the target human. The target does
+not need a CLI member profile. GenAuth renders the
 Agent, audience, permission set, and expiry and records the user's decision.
 
 ### Call a fixed Provider
@@ -474,7 +458,9 @@ or select the wrong target. Enforce these rules:
   forwarding layer. Agent Identity owns authorization state and Token signing.
 - DataPolicy IDs are permission references, not OAuth scopes. Agent Identity
   stores snapshots; GenAuth remains authoritative.
-- The owner/requester can never approve their own request.
+- Ordinary owners/requesters cannot approve their own request. The current
+  user-pool root administrator may approve, but not reject, their own request
+  when the server verifies the role from signed context.
 - A member can explicitly authorize only themselves and cannot request silent
   authorization.
 - Silent authorization requires Agent policy, a current GenAuth decision, and

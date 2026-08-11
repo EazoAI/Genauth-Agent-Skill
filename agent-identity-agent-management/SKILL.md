@@ -47,10 +47,12 @@ genauth-agent agents capability update \
    conflict, inspect the Agent again and never guess the next version.
 
 6. Submit the frozen capability version with `agents capability submit --agent-id <id> --version <version>`.
-7. A different authorized administrator reviews `approvals get --approval-id <id>` and then, after explicit confirmation, runs `approvals approve --approval-id <id> --yes` or `approvals reject --approval-id <id> --yes` with the current version and a reason. Add `--settings` for a settings approval.
+7. An authorized administrator reviews `approvals get --approval-id <id>` and then, after explicit confirmation, runs `approvals approve --approval-id <id> --yes` or `approvals reject --approval-id <id> --yes` with the current version and a reason. Use a different administrator unless the requester is the current user-pool root administrator and is approving their own request. Self-rejection is never allowed. Add `--settings` for a settings approval.
 
-Keep owner/requester and approver as separate named profiles and run `auth
-status` immediately before submit and decision writes. Capture the `agent_id`,
+Keep owner/requester and approver as separate named profiles for ordinary
+approvals. The current user-pool root administrator may reuse the requester
+profile for self-approval, but the server remains authoritative for that role.
+Run `auth status` immediately before submit and decision writes. Capture the `agent_id`,
 Capability draft `record_version`, approval ID, and approval version from JSON.
 After the decision, fetch `agents get` again and confirm the active Capability;
 do not reuse the submitted draft response as proof of activation.

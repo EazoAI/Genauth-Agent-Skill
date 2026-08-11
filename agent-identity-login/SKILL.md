@@ -1,7 +1,7 @@
 ---
 name: agent-identity-login
 version: 2.0.0
-description: "Authenticate an Agent Identity CLI user or tenant administrator and select the required GenAuth user pool."
+description: "Authenticate the Agent Identity CLI tenant administrator through GenAuth browser login and select a manageable user pool."
 metadata:
   requires:
     bins: ["genauth-agent"]
@@ -11,10 +11,29 @@ metadata:
 
 Read [`../agent-identity-shared/SKILL.md`](../agent-identity-shared/SKILL.md) and [`../agent-identity-auth/SKILL.md`](../agent-identity-auth/SKILL.md) completely, then follow the matching login/profile workflow.
 
-Success requires `genauth-agent auth status` to confirm the identity type and selected user pool. A printed browser URL, edited profile file, or locally stored session alone is not proof of login.
+The CLI currently supports tenant-administrator login only. Do not ask whether
+the user is a member or administrator, and do not ask for a Client ID or user
+pool before starting browser login. Start with:
 
-Ask for a role-specific profile name before login. For a journey involving
-approval, create distinct owner and approver profiles and show a compact status
-summary for both without revealing session data. If the profile exists, inspect
+```bash
+genauth-agent auth login --endpoint <genauth-origin> --profile-name <profile>
+```
+
+GenAuth discovers the dedicated root-user-pool OIDC client from the endpoint.
+After authentication, the CLI auto-selects the only manageable user pool. If
+it returns `USER_POOL_SELECTION_REQUIRED`, show the returned manageable pool
+IDs, ask the administrator to choose one, then repeat with
+`--user-pool-id <pool>`. The pool identifies the post-login management context;
+it is not an OIDC login credential.
+
+Success requires `genauth-agent auth status` to confirm
+`login_type=tenant_admin` and the selected user pool. A printed browser URL,
+edited profile file, or locally stored session alone is not proof of login.
+
+Ask for a role-specific profile name before login. For ordinary journeys
+involving approval, create distinct owner and approver profiles. A confirmed
+current user-pool root administrator may reuse the owner profile for an approve
+decision, but not a reject decision. Show a compact status summary for every
+profile without revealing session data. If the profile exists, inspect
 it first and refresh or switch its validated user pool instead of overwriting it
 blindly.

@@ -16,23 +16,28 @@ Before acting, read [`../agent-identity-shared/SKILL.md`](../agent-identity-shar
 - Check current identity: `genauth-agent auth status`
 - List profiles: `genauth-agent profiles list`
 - Select an existing profile: `genauth-agent profiles use --name <name>`
-- User login: `genauth-agent auth login --endpoint <genauth-origin> --user-pool-id <pool> --client-id <client>`
-- Tenant administrator login: add `--admin`; a user pool is still mandatory.
+- Tenant administrator login: `genauth-agent auth login --endpoint <genauth-origin> --profile-name <name>`
+- The CLI discovers the dedicated OIDC client. Never ask for or add `--client-id`.
+- Do not ask for a user pool before the first browser login. If GenAuth returns
+  multiple manageable pools, ask the administrator to choose from that returned
+  list and retry with `--user-pool-id <pool>`.
 - Switch administrator user pool: `genauth-agent auth select-user-pool --user-pool-id <pool>`
 - Refresh an OIDC session: `genauth-agent auth refresh`
 - Logout: `genauth-agent auth logout`
 
 For multi-role work, always create named profiles with `--profile-name` and
 address them using the global `--profile` flag. Recommended names are
-`agent-owner`, `agent-approver`, `agent-admin`, and `agent-user-<label>`. Verify
-each profile independently:
+`agent-owner`, `agent-approver`, and `agent-admin`. Every CLI profile is a
+tenant-administrator profile. Verify each profile independently:
 
 ```bash
 genauth-agent --profile <name> auth status --output json --non-interactive
 ```
 
 Do not use `profiles use` inside automated multi-role flows: changing the
-default makes actor confusion and accidental self-approval more likely.
+default makes actor confusion more likely. Even for the user-pool root
+administrator self-approval exception, carry the profile explicitly and let
+the server prove the role.
 
 Browser authorization is a human step. Return the printed GenAuth URL to the user and wait; do not attempt to fill credentials, collect passwords, or claim success before `auth status` succeeds.
 

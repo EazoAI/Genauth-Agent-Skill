@@ -40,14 +40,14 @@ flowchart LR
 
 | 能力 | 说明 |
 | --- | --- |
-| 身份与用户池 | 支持租户成员和租户管理员登录；两种身份都必须选择用户池 |
-| 多角色 Profile | owner/requester、approver、admin、member 使用独立命名 Profile |
+| 身份与用户池 | CLI 暂时只支持租户管理员浏览器登录；登录后选择可管理用户池 |
+| 多角色 Profile | owner/requester、approver、admin 使用独立的管理员 Profile |
 | 权限发现 | 从 GenAuth 查询 DataPolicy，Agent Identity 仅保存权限快照 |
 | Agent 管理 | 创建和管理公司级 Agent、Capability、生命周期和 readiness |
-| 审批 | Capability 和 Agent 设置分别提交、冻结版本并由其他管理员审批 |
+| 审批 | Capability 和 Agent 设置分别提交并冻结版本；普通申请由其他管理员审批，用户池根管理员可自批 |
 | Agent 设置 | 控制显式/静默授权策略、Token TTL、UserGrant TTL、Credential TTL、redirect URI 等 |
 | Credential | 创建、轮换、吊销；秘密默认保存在操作系统密钥链 |
-| 用户授权 | 成员仅能显式授权自己；管理员可为指定用户发起显式或策略允许的静默授权 |
+| 用户授权 | 管理员为指定用户发起授权；显式授权由目标用户在 GenAuth 浏览器完成 |
 | Token | 由 Agent Identity 签发短期 Agent Token，默认不输出原始 Token |
 | Provider 调用 | CLI 获取 Token 后只通过 GenAuth 调用部署好的固定 Provider 路由 |
 | 撤销与诊断 | 撤销 Credential、UserGrant、Token JTI，并按层定位失败原因 |
@@ -75,8 +75,8 @@ flowchart LR
 
 - macOS arm64/x64、Linux arm64/x64 或 Windows x64。
 - Node.js 与 npm，用于安装预构建 CLI 和 Skills。
-- 一个可访问的 GenAuth HTTPS 地址、OIDC Client ID 和目标用户池 ID。
-- 需要执行审批时，准备两个不同的真实身份：requester/owner 与 approver。
+- 一个可访问的 GenAuth HTTPS 地址；CLI 会自动发现专用 OIDC Client ID。
+- 普通申请需要两个不同的真实身份：requester/owner 与 approver；当前用户池根管理员可由服务端验证后自提自批，但不能自驳回。
 
 ### 第一步：安装 CLI
 
@@ -169,18 +169,12 @@ Profile、用户池和密钥链状态。只做只读检查。
 
 ### 第二步：登录
 
-租户成员登录示例：
-
-```text
-请使用 agent-identity-login Skill，以成员身份登录 GenAuth。
-用户池是 <user-pool-id>，Client ID 是 <client-id>，Profile 名称使用 agent-owner。
-```
-
 租户管理员登录示例：
 
 ```text
 请使用 agent-identity-login Skill，以租户管理员身份登录 GenAuth。
-用户池是 <user-pool-id>，Client ID 是 <client-id>，Profile 名称使用 agent-approver。
+GenAuth 地址是 <genauth-origin>，Profile 名称使用 agent-owner。打开浏览器登录前
+不要询问 Client ID 或用户池 ID。
 ```
 
 AI Agent 会返回 GenAuth 登录地址或打开浏览器。用户完成登录后，必须通过
@@ -197,7 +191,7 @@ AI Agent 会返回 GenAuth 登录地址或打开浏览器。用户完成登录�
 - 权限：先查询并让我确认 orders.read 对应的 DataPolicy ID
 - 使用 agent-approver 审批 Capability 和 Agent 设置
 - 授权模式使用 explicit-only，Token TTL 10 分钟
-- 授权当前成员本人
+- 通过 GenAuth 浏览器显式授权目标用户 <target-user-id>
 - 最终通过 GenAuth 调用固定 Provider orders 的 GET /orders
 
 每一步都输出非敏感 checkpoint；遇到登录、审批、授权或安全范围扩大时暂停让我确认。
@@ -208,30 +202,17 @@ AI Agent 会返回 GenAuth 登录地址或打开浏览器。用户完成登录�
 
 ## 认证、用户池与多角色 Profile
 
-### 成员登录
-
-```bash
-genauth-agent auth login \
-  --profile-name agent-owner \
-  --endpoint <genauth-https-origin> \
-  --user-pool-id <user-pool-id> \
-  --client-id <oidc-client-id>
-```
-
-成员只能以本人身份进行显式用户授权，不能指定其他用户，也不能申请静默授权。
-
 ### 租户管理员登录
 
 ```bash
 genauth-agent auth login \
-  --profile-name agent-approver \
-  --admin \
-  --endpoint <genauth-https-origin> \
-  --user-pool-id <user-pool-id> \
-  --client-id <oidc-client-id>
+  --profile-name agent-owner \
+  --endpoint <genauth-https-origin>
 ```
 
-租户管理员也必须选择用户池。管理员切换用户池必须经过服务端验证：
+这是当前唯一的 CLI 登录身份。CLI 自动发现根用户池专用应用，不接受
+`--admin` 或 `--client-id`。若管理员仅有一个可管理用户池会自动选择；多个时从
+GenAuth 返回的列表中选择，再使用 `--user-pool-id` 重试，或登录后切换：
 
 ```bash
 genauth-agent --profile agent-approver auth select-user-pool \
@@ -242,10 +223,9 @@ genauth-agent --profile agent-approver auth select-user-pool \
 
 | Profile | 角色 | 主要职责 |
 | --- | --- | --- |
-| `agent-owner` | 成员或管理员 | 创建 Agent、维护 Capability 和设置、创建 Credential |
+| `agent-owner` | 租户管理员 | 创建 Agent、维护 Capability 和设置、创建 Credential |
 | `agent-approver` | 另一位租户管理员 | 审批或拒绝 Capability/设置变更 |
 | `agent-admin` | 租户管理员 | 为指定用户发起授权，或发起策略允许的静默授权 |
-| `agent-user-<label>` | 租户成员 | 以本人身份完成显式授权 |
 
 同一旅程中的 Profile 必须选择同一个用户池。owner/requester 不能审批自己的请求。
 多角色自动化必须在每条命令中显式传入 `--profile`，不要依赖可变的默认 Profile。
@@ -265,7 +245,7 @@ genauth-agent --profile agent-approver auth status --output json --non-interacti
 | [`agent-identity-user-journey`](agent-identity-user-journey/SKILL.md) | 从登录一直完成到 Provider 调用，或从中断状态恢复整个闭环 |
 | [`agent-identity-login`](agent-identity-login/SKILL.md) | 只需要登录、选择身份和用户池 |
 | [`agent-identity-create-agent`](agent-identity-create-agent/SKILL.md) | 查询权限、创建公司 Agent 并提交 Capability 审批 |
-| [`agent-identity-approve-agent`](agent-identity-approve-agent/SKILL.md) | 使用独立管理员审查并决定 Capability 或设置审批 |
+| [`agent-identity-approve-agent`](agent-identity-approve-agent/SKILL.md) | 使用管理员审查并决定 Capability 或设置审批；用户池根管理员可自提自批 |
 | [`agent-identity-authorize-user`](agent-identity-authorize-user/SKILL.md) | 为成员本人或管理员指定的用户创建授权并等待 UserGrant |
 | [`agent-identity-call-provider`](agent-identity-call-provider/SKILL.md) | 使用 Credential 与 UserGrant 通过 GenAuth 调用固定 Provider |
 | [`agent-identity-revoke-access`](agent-identity-revoke-access/SKILL.md) | 精确撤销 Credential、UserGrant 或 Token JTI |
@@ -291,8 +271,8 @@ genauth-agent --profile agent-approver auth status --output json --non-interacti
 | --- | --- | --- | --- |
 | 1. 身份上下文 | owner、approver、用户 | 登录并验证相同用户池 | Profile、subject、login type、selected user pool |
 | 2. 权限与 Agent | owner | 查询 DataPolicy，创建公司 Agent | Agent ID、Capability draft version |
-| 3. Capability 审批 | owner → approver | 提交冻结版本，由其他管理员审批 | approval ID/version、active Capability |
-| 4. Agent 设置 | owner → approver | 配置授权模式和 TTL，必要时审批 | effective settings 和版本 |
+| 3. Capability 审批 | owner → approver/根管理员本人 | 提交冻结版本，普通申请由其他管理员审批，根管理员可自批 | approval ID/version、active Capability |
+| 4. Agent 设置 | owner → approver/根管理员本人 | 配置授权模式和 TTL，必要时审批 | effective settings 和版本 |
 | 5. Credential | owner | 在 readiness 只剩 `credential_required` 时创建 | credential ID、Keychain ref、无 readiness blocker |
 | 6. 用户授权 | member 或 admin | 显式/策略允许的静默授权 | `APPROVED` AuthorizationRequest、active UserGrant |
 | 7. Provider 调用 | runtime profile | CLI 内存中获取 Token，经 GenAuth 调固定 Provider | ProviderResponse 和 request ID |
@@ -369,8 +349,8 @@ genauth-agent --profile <authorization-profile> --timeout 10m \
   --output json --non-interactive
 ```
 
-管理员为指定用户发起授权时可增加 `--user-id <target-user-id>`。成员不得增加
-这个参数。返回的 `authorization_url` 只能交给目标用户本人，由 GenAuth 展示
+管理员为指定用户发起授权时使用 `--user-id <target-user-id>`。目标用户不需要
+CLI 成员 Profile。返回的 `authorization_url` 只能交给目标用户本人，由 GenAuth 展示
 Agent、权限和有效期并完成登录与确认。
 
 ### 调用固定 Provider

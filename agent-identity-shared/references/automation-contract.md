@@ -9,7 +9,10 @@ Use a separate named CLI profile for each human role:
 - `agent-owner`: creates and submits the company Agent.
 - `agent-approver`: reviews and decides capability or settings requests.
 - `agent-admin`: performs administrator-only target-user or silent authorization.
-- `agent-user-<label>`: performs a member's self authorization.
+
+Every CLI profile is currently authenticated as a tenant administrator. Target
+users complete explicit authorization in the GenAuth browser; do not create or
+request a CLI member-login profile.
 
 One person may hold several business roles, but the owner/requester cannot be
 the approver for their own request. Before each write, run:

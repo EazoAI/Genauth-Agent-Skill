@@ -11,7 +11,10 @@ metadata:
 
 Read [`../agent-identity-shared/SKILL.md`](../agent-identity-shared/SKILL.md) and [`../agent-identity-authorization-runtime/SKILL.md`](../agent-identity-authorization-runtime/SKILL.md) completely.
 
-Normal users authorize only themselves through explicit consent. Administrators may name a target user; silent mode requires Agent policy, GenAuth eligibility, and explicit confirmation before `--yes`.
+The CLI currently authenticates administrators only. An administrator may name
+a target user; that target completes explicit consent in the GenAuth browser
+without a CLI member profile. Silent mode requires Agent policy, GenAuth
+eligibility, and explicit confirmation before `--yes`.
 
 For an explicit same-workstation flow, prefer the CLI-managed loopback callback
 and `--open-browser`. For a different workstation, also use the default

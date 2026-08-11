@@ -36,9 +36,12 @@ call.
 
 ## User authorization
 
-For a normal user, never pass `--user-id` and never request silent mode. The CLI routes the request to `/me` and the service binds the target to the logged-in user.
-
-For a tenant administrator, explicit authorization may specify `--user-id`. Silent authorization is security-sensitive: show target user, audience, all permission IDs, and TTL, obtain explicit confirmation, then request `--mode silent --yes`. A denial must not be downgraded automatically to explicit mode.
+The CLI currently authenticates tenant administrators only. Explicit
+authorization may specify `--user-id`; the target user completes consent in the
+GenAuth browser without a CLI member profile. Silent authorization is
+security-sensitive: show target user, audience, all permission IDs, and TTL,
+obtain explicit confirmation, then request `--mode silent --yes`. A denial must
+not be downgraded automatically to explicit mode.
 
 ```bash
 genauth-agent authorizations create \

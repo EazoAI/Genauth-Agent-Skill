@@ -21,8 +21,7 @@ Use this target-specific sequence:
   then `grants revoke --grant-id <id> --version <current-version>
   --reason <reason> --yes`.
 - Token: `tokens list --agent-id <owned-agent-id>` when required by the actor,
-  then `tokens revoke --jti <jti> --reason <reason> --yes` and include
-  `--agent-id` for a member-owned Agent.
+  then `tokens revoke --jti <jti> --reason <reason> --yes`.
 
 After revocation, re-fetch metadata and audit events. Report whether the server
 revocation succeeded and whether any local Credential reference was removed as
