@@ -1,0 +1,15 @@
+{
+  "identifier": "orders_agent",
+  "display_name": "Orders Agent",
+  "description": "Calls approved order operations for authorized users",
+  "owner_user_id": "<required-for-tenant-admin-create>",
+  "application_id": "<genauth-application-id>",
+  "capabilities": [
+    {
+      "audience": "https://api.example.com/orders",
+      "permission_ids": [
+        "<genauth-data-policy-id>"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "expected_record_version": 0,
+  "authorization_mode": "EXPLICIT_ONLY",
+  "token_ttl_seconds": 600,
+  "max_user_grant_ttl_seconds": 3600,
+  "credential_ttl_seconds": 2592000,
+  "rotation_overlap_seconds": 300,
+  "redirect_uris": [],
+  "require_realtime_decision": true
+}
