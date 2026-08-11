@@ -101,6 +101,7 @@ CLI 验证结果必须包含：
   "api_version": "agent-identity.cli/v1",
   "kind": "Version",
   "data": {
+    "command_contract": "agent-identity.commands/v2",
     "server_contract": "genauth-agent-identity-v1"
   }
 }
@@ -238,7 +239,7 @@ agent-identity auth login \
 租户管理员也必须选择用户池。管理员切换用户池必须经过服务端验证：
 
 ```bash
-agent-identity --profile agent-approver auth switch-user-pool \
+agent-identity --profile agent-approver auth select-user-pool \
   --user-pool-id <user-pool-id>
 ```
 
@@ -329,7 +330,7 @@ agent-identity --profile agent-owner agents create \
 ### 提交和审批 Capability
 
 ```bash
-agent-identity --profile agent-owner agents submit \
+agent-identity --profile agent-owner agents capability submit \
   --agent-id <agent-id> --version <draft-version> \
   --output json --non-interactive
 
@@ -380,7 +381,7 @@ Agent、权限和有效期并完成登录与确认。
 ### 调用固定 Provider
 
 ```bash
-agent-identity --profile <runtime-profile> api call \
+agent-identity --profile <runtime-profile> providers call \
   --credential keychain://agent-identity/credential/<credential-id> \
   --grant-id <user-grant-id> \
   --audience <audience> \
@@ -390,7 +391,7 @@ agent-identity --profile <runtime-profile> api call \
   --output json --non-interactive
 ```
 
-`api call` 是推荐路径：Token 只存在于 CLI 进程中，并只发送回 GenAuth。不得添加
+`providers call` 是推荐路径：Token 只存在于 CLI 进程中，并只发送回 GenAuth。不得添加
 任意 `--url`、`--host`、Authorization/Cookie 或可信 GenAuth 请求头。
 
 ## JSON 输出契约
@@ -452,7 +453,7 @@ JSON 字段，不解析表格、进度文本或 debug 日志。
   Token 不得写入聊天、日志、文件、Skill 输出或长期环境变量。
 - Credential secret 默认存入 OS Keychain。只保留 `credential_id` 和
   `keychain://` 引用，不读取引用背后的值。
-- 默认使用 `api call`。只有调用方明确需要原子 Token 操作时才使用
+- 默认使用 `providers call`。只有调用方明确需要原子 Token 操作时才使用
   `tokens issue`，默认不带 `--show-token`。
 - 删除 Agent 不可逆；暂停、撤销 Grant、撤销 Credential 和撤销 Token 必须根据
   用户要求选择最小影响范围。
@@ -524,8 +525,9 @@ AGENT_IDENTITY_CLI=/path/to/agent-identity \
 ### GitLab CI 推送 GitHub
 
 仓库中的 [`.gitlab-ci.yml`](.gitlab-ci.yml) 会在 GitLab 默认分支或 Tag
-Pipeline 中，将相同 commit/Tag 推送到 GitHub。任务使用 `GIT_ASKPASS`，Token
-不会写入 remote URL，并且永远不 force push。
+Pipeline 中，将相同 commit/Tag 推送到 GitHub。任务通过进程级 Git HTTP
+Authorization Header 使用 Token；Token 不会写入 remote URL 或仓库配置，并且
+永远不 force push。
 
 在 GitLab **Settings > CI/CD > Variables** 配置：
 

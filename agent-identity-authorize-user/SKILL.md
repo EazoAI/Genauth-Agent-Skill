@@ -1,6 +1,6 @@
 ---
 name: agent-identity-authorize-user
-version: 1.1.0
+version: 2.0.0
 description: "Create explicit or policy-allowed silent Agent user authorization and wait for the resulting UserGrant."
 metadata:
   requires:

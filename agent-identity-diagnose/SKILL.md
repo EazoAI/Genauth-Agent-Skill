@@ -1,6 +1,6 @@
 ---
 name: agent-identity-diagnose
-version: 1.1.0
+version: 2.0.0
 description: "Diagnose Agent Identity CLI profile, user-pool context, readiness, authorization, Token, gateway, and Provider failures without mutating state."
 metadata:
   requires:
@@ -31,7 +31,7 @@ while diagnosing.
 2. **Identity and user-pool context**
 
    ```bash
-   agent-identity config list-profiles --output json --non-interactive
+   agent-identity profiles list --output json --non-interactive
    agent-identity --profile <profile> auth status --output json --non-interactive
    ```
 
@@ -64,7 +64,7 @@ while diagnosing.
 
    ```bash
    agent-identity --profile <profile> authorizations get --authorization-id <id> --output json --non-interactive
-   agent-identity --profile <profile> authorizations list-grants --output json --non-interactive
+   agent-identity --profile <profile> grants list --output json --non-interactive
    ```
 
    `PENDING` means human action or polling remains; `CONSENTED` means requester
@@ -83,7 +83,7 @@ while diagnosing.
 
 7. **GenAuth decision and fixed Provider**
 
-   Inspect the failed `api call` error envelope and `request_id`. Classify it as
+   Inspect the failed `providers call` error envelope and `request_id`. Classify it as
    GenAuth ingress/transport, Agent Identity Token/signing, current DataPolicy
    decision, fixed Provider routing, or Provider upstream response. Do not test
    an arbitrary Provider URL or add trusted headers.

@@ -37,9 +37,11 @@ Every non-browser command must return one JSON object shaped as:
 }
 ```
 
-Failures use `error.code` and can include `error.remediation`. Read identifiers
+The `version` command must additionally report
+`data.command_contract=agent-identity.commands/v2`. Failures use `error.code` and can include `error.remediation`. Read identifiers
 only from `data` or `error.remediation`; never scrape human text. Treat a
-missing field, unexpected `kind`, or incompatible `api_version` as a stop.
+missing field, unexpected `kind`, incompatible `api_version`, or an incompatible
+command contract as a stop.
 
 ## Checkpoint ledger
 
@@ -83,7 +85,7 @@ Do not report the overall journey as complete until all of these are true:
 - effective Agent settings are known and acceptable.
 - Agent readiness has no blocker after an active Credential exists.
 - an active UserGrant matches the subject, audience, and permission set.
-- `api call` returned a Provider response, or the user explicitly requested
+- `providers call` returned a Provider response, or the user explicitly requested
   only Token issuance and that operation succeeded.
 
 Report each condition separately. Approval success alone is not runtime

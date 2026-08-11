@@ -1,6 +1,6 @@
 ---
 name: agent-identity-user-journey
-version: 1.0.0
+version: 2.0.0
 description: "Run or resume the complete Agent Identity journey: user-pool login, company Agent creation and approval, settings, Credential, user authorization, Token, and fixed Provider call through GenAuth."
 metadata:
   requires:
@@ -96,7 +96,7 @@ Checkpoint: Agent ID and fetched Capability draft `record_version`.
 Submit the exact fetched draft version:
 
 ```bash
-agent-identity --profile agent-owner agents submit --agent-id <agent-id> --version <draft-version> --output json --non-interactive
+agent-identity --profile agent-owner agents capability submit --agent-id <agent-id> --version <draft-version> --output json --non-interactive
 ```
 
 Switch actors. The approver must fetch the frozen request and compare requester,
@@ -177,7 +177,7 @@ Checkpoint: authorization request ID/status and active UserGrant ID/version.
 Prefer the closed runtime call; it obtains the Agent Identity Token in-process:
 
 ```bash
-agent-identity --profile <runtime-profile> api call \
+agent-identity --profile <runtime-profile> providers call \
   --credential <keychain-secret-ref> \
   --grant-id <user-grant-id> \
   --audience <audience> \

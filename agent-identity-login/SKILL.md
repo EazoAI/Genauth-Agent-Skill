@@ -1,6 +1,6 @@
 ---
 name: agent-identity-login
-version: 1.1.0
+version: 2.0.0
 description: "Authenticate an Agent Identity CLI user or tenant administrator and select the required GenAuth user pool."
 metadata:
   requires:

@@ -1,6 +1,6 @@
 ---
 name: agent-identity-revoke-access
-version: 1.1.0
+version: 2.0.0
 description: "Revoke an Agent Credential, UserGrant, or Token JTI after showing its exact target and runtime impact."
 metadata:
   requires:
@@ -17,8 +17,8 @@ Use this target-specific sequence:
 
 - Credential: `credentials list --agent-id <agent-id>`, then `credentials revoke
   --agent-id <agent-id> --credential-id <id> --yes`.
-- UserGrant: `authorizations list-grants`, match exact subject/audience/scope,
-  then `authorizations revoke --grant-id <id> --version <current-version>
+- UserGrant: `grants list`, match exact subject/audience/scope,
+  then `grants revoke --grant-id <id> --version <current-version>
   --reason <reason> --yes`.
 - Token: `tokens list --agent-id <owned-agent-id>` when required by the actor,
   then `tokens revoke --jti <jti> --reason <reason> --yes` and include

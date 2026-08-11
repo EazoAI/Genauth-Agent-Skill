@@ -13,7 +13,7 @@ names not recognized by the installed CLI contract are a hard stop.
 | Credential | active -> rotated or revoked/expired | A local Keychain ref is usable only while the server Credential is active. |
 | AuthorizationRequest | pending -> consented -> approved, or denied/cancelled/expired | `CONSENTED` still requires requester exchange; only `APPROVED` with a UserGrant is complete. |
 | UserGrant | active -> revoked/expired | Revoke with the current version; reacquisition requires a new authorization. |
-| Token | active -> revoked/expired | Prefer short expiry and `api call`; revoke by exact JTI. |
+| Token | active -> revoked/expired | Prefer short expiry and `providers call`; revoke by exact JTI. |
 
 ## Exit-code decision table
 
@@ -38,7 +38,7 @@ names not recognized by the installed CLI contract are a hard stop.
   `--append-permission`, or `--replace-permissions`; present the resulting full
   set before retrying.
 - `USER_POOL_SELECTION_REQUIRED` or `USER_POOL_NOT_MANAGEABLE`: select a real
-  manageable pool through login or `auth switch-user-pool`; never edit profile
+  manageable pool through login or `auth select-user-pool`; never edit profile
   storage directly.
 - `FORBIDDEN_USER_AUTHORIZATION_MODE`: a member attempted another-user or
   silent authorization. Use self explicit authorization, or switch to a real
@@ -69,7 +69,7 @@ After interruption, run read-only commands in this order:
 2. `agents get`, `agents settings get`, and `agents readiness`.
 3. relevant `approvals get/list` if a change was submitted.
 4. `credentials list` without reading Keychain secrets.
-5. `authorizations get` and `authorizations list-grants`.
+5. `authorizations get` and `grants list`.
 6. `tokens list` and `audit list` when runtime evidence is needed.
 
 Resume from observed state. Never rerun all writes from the beginning.

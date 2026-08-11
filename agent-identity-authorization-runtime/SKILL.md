@@ -1,6 +1,6 @@
 ---
 name: agent-identity-authorization-runtime
-version: 1.1.0
+version: 2.0.0
 description: "Manage Agent Credentials, explicit or silent user authorization, UserGrants, short-lived Agent Tokens, and GenAuth Provider calls through the Agent Identity CLI."
 metadata:
   requires:
@@ -64,7 +64,7 @@ The returned `authorization_url` is bound to both the request and selected user 
 
 Capture the authorization request ID from the returned `data`, not from URL
 text. On resume, fetch it with `authorizations get --authorization-id <id>`.
-After completion, fetch `authorizations list-grants` and match exact subject,
+After completion, fetch `grants list` and match exact subject,
 Agent, audience, permission set, status, and expiry before retaining the grant
 ID. Never pick the newest grant merely by list order.
 
@@ -99,7 +99,7 @@ active UserGrant completes authorization. Never retry a denial as silent or
 explicit authorization automatically.
 
 Before revoking a UserGrant, show Agent, subject, audience, permissions, current version, and reason. Revocation invalidates subsequent introspection via the UserGrant epoch.
-Run `authorizations revoke --grant-id <grant-id> --version <current-version>
+Run `grants revoke --grant-id <grant-id> --version <current-version>
 --reason <reason> --yes` only after that confirmation. The server resolves the
 Agent inside the selected user pool; do not ask for or pass an Agent ID.
 
@@ -108,7 +108,7 @@ Agent inside the selected user pool; do not ask for or pass an Agent ID.
 Prefer the closed Provider flow:
 
 ```bash
-agent-identity api call \
+agent-identity providers call \
   --credential keychain://agent-identity/credential/<credential-id> \
   --grant-id <user-grant-id> \
   --audience <audience> \

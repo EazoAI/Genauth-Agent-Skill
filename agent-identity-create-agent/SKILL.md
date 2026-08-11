@@ -1,6 +1,6 @@
 ---
 name: agent-identity-create-agent
-version: 1.1.0
+version: 2.0.0
 description: "Create a company Agent, select GenAuth DataPolicy references, inspect its draft, and submit the frozen capability for approval."
 metadata:
   requires:

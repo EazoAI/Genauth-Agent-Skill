@@ -1,6 +1,6 @@
 ---
 name: agent-identity-call-provider
-version: 1.1.0
+version: 2.0.0
 description: "Call an approved fixed Provider route through GenAuth using an in-memory Agent Identity Token."
 metadata:
   requires:
@@ -11,7 +11,7 @@ metadata:
 
 Read [`../agent-identity-shared/SKILL.md`](../agent-identity-shared/SKILL.md) and [`../agent-identity-authorization-runtime/SKILL.md`](../agent-identity-authorization-runtime/SKILL.md) completely.
 
-Use `agent-identity api call` with a keychain Credential ref, active UserGrant, exact audience, fixed Provider key, method, and normalized path. Never accept an arbitrary host, URL, caller Authorization/Cookie, or trusted GenAuth header. Report gateway, decision, and Provider errors as separate layers.
+Use `agent-identity providers call` with a keychain Credential ref, active UserGrant, exact audience, fixed Provider key, method, and normalized path. Never accept an arbitrary host, URL, caller Authorization/Cookie, or trusted GenAuth header. Report gateway, decision, and Provider errors as separate layers.
 
 Before calling, verify Agent readiness, server-active Credential metadata, and
 the exact UserGrant match. Do not read the Keychain secret or issue a visible

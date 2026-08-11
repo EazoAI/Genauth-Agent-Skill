@@ -1,6 +1,6 @@
 ---
 name: agent-identity-shared
-version: 1.1.0
+version: 2.0.0
 description: "Agent Identity CLI shared authentication, selected user-pool context, JSON contract, errors, and secret-safety rules. Read before any other agent-identity skill."
 metadata:
   requires:
@@ -26,9 +26,10 @@ agent-identity version --output json --non-interactive
 agent-identity doctor --output json --non-interactive
 ```
 
-Require `api_version` to be `agent-identity.cli/v1` and `server_contract` to be
+Require `api_version` to be `agent-identity.cli/v1`, `command_contract` to be
+`agent-identity.commands/v2`, and `server_contract` to be
 `genauth-agent-identity-v1`. An unknown contract is a hard stop; do not guess
-renamed fields or flags. `doctor` is read-only and proves local profile,
+renamed commands, fields, or flags. `doctor` is read-only and proves local profile,
 selected user pool, secret-store access, and GenAuth reachability, but it does
 not prove that an Agent is runtime-ready.
 
@@ -49,7 +50,7 @@ agent-identity auth login --admin --endpoint <genauth-origin> --user-pool-id <po
 
 Do not request, accept, or type a password. An existing session may be imported only through stdin with `--session-token-stdin`; never put a session Token on the command line.
 
-Both users and tenant administrators must have a selected user pool. To change an administrator context, use `auth switch-user-pool`; never edit the local profile file directly.
+Both users and tenant administrators must have a selected user pool. To change an administrator context, use `auth select-user-pool`; never edit the local profile file directly.
 
 ## Machine contract
 
@@ -76,7 +77,7 @@ Both users and tenant administrators must have a selected user pool. To change a
 - Never cache an Agent access Token in a file, memory note, Skill output, or environment beyond a single child process.
 - `credentials create` and `rotate` store the one-time secret in the OS secret store. Report only `credential_id`, `secret_ref`, and expiry.
 - `tokens issue` must omit `--show-token` unless the user explicitly asks for the raw Token and understands the exposure.
-- Prefer `api call`; it gets a Token in-process and sends it only back to GenAuth.
+- Prefer `providers call`; it gets a Token in-process and sends it only back to GenAuth.
 - `auth logout` first revokes the GenAuth OIDC session. If remote revocation
   fails, report the failure and retain the local profile so the user can retry;
   never claim logout from local-file deletion alone.

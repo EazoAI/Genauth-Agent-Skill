@@ -1,6 +1,6 @@
 ---
 name: agent-identity-setup
-version: 1.0.0
+version: 2.0.0
 description: "Verify Agent Identity CLI installation, CLI/server contract compatibility, local Skill links, profile context, user-pool selection, and OS secret-store readiness without mutating remote resources."
 metadata:
   requires:
@@ -21,9 +21,10 @@ agent-identity version --output json --non-interactive
 agent-identity --help
 ```
 
-Require API `agent-identity.cli/v1` and server contract
-`genauth-agent-identity-v1`. Do not use `agent-identity --version`; the supported
-interface is the `version` subcommand.
+Require API `agent-identity.cli/v1`, command contract
+`agent-identity.commands/v2`, and server contract `genauth-agent-identity-v1`.
+Do not use `agent-identity --version`; the supported interface is the `version`
+subcommand. A CLI with `commands/v1` must not be used with these 2.x Skills.
 
 When working from the source repository, run its companion check:
 
@@ -34,7 +35,7 @@ AGENT_IDENTITY_CLI="$(command -v agent-identity)" ./scripts/verify-cli-contract.
 ## Verify profiles and local prerequisites
 
 ```bash
-agent-identity config list-profiles --output json --non-interactive
+agent-identity profiles list --output json --non-interactive
 agent-identity --profile <name> auth status --output json --non-interactive
 agent-identity --profile <name> doctor --output json --non-interactive
 ```

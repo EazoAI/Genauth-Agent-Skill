@@ -64,30 +64,35 @@ if printf '%s' "$version_json" | grep -Fq '"server_contract":"genauth-agent-iden
 else
   fail "server contract is not genauth-agent-identity-v1"
 fi
+if printf '%s' "$version_json" | grep -Fq '"command_contract":"agent-identity.commands/v2"'; then
+  pass "command contract agent-identity.commands/v2"
+else
+  fail "command contract is not agent-identity.commands/v2"
+fi
 
 commands='version
 doctor
-config list-profiles
-config use-profile
+profiles list
+profiles use
 auth status
 auth login
 auth refresh
 auth logout
-auth switch-user-pool
+auth select-user-pool
 permissions list
 permissions get
 agents create
 agents list
 agents get
 agents capability update
-agents submit
+agents capability submit
 agents readiness
 agents settings get
 agents settings update
 agents settings submit
-agents suspend
-agents resume
-agents delete
+agents lifecycle pause
+agents lifecycle resume
+agents lifecycle archive
 approvals list
 approvals get
 approvals approve
@@ -103,13 +108,13 @@ authorizations consent
 authorizations exchange
 authorizations deny
 authorizations cancel
-authorizations list-grants
-authorizations revoke
+grants list
+grants revoke
 tokens issue
 tokens list
 tokens inspect
 tokens revoke
-api call
+providers call
 audit list'
 
 while IFS= read -r command_text; do
@@ -125,7 +130,7 @@ agents create|--owner-user-id
 agents create|--application-id
 agents create|--permission-id
 agents capability update|--version
-agents submit|--version
+agents capability submit|--version
 agents settings update|--version
 approvals approve|--version
 approvals approve|--yes
@@ -138,18 +143,18 @@ authorizations create|--user-id
 authorizations create|--mode
 authorizations create|--yes
 authorizations wait|--authorization-id
-authorizations revoke|--version
-authorizations revoke|--reason
-authorizations revoke|--yes
+grants revoke|--version
+grants revoke|--reason
+grants revoke|--yes
 tokens issue|--exec
 tokens issue|--show-token
 tokens revoke|--jti
 tokens revoke|--reason
 tokens revoke|--yes
-api call|--credential
-api call|--grant-id
-api call|--provider
-api call|--path'
+providers call|--credential
+providers call|--grant-id
+providers call|--provider
+providers call|--path'
 
 while IFS='|' read -r command_text flag; do
   [ -n "$command_text" ] && check_flag "$command_text" "$flag"

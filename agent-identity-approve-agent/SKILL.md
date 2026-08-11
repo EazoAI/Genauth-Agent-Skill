@@ -1,6 +1,6 @@
 ---
 name: agent-identity-approve-agent
-version: 1.1.0
+version: 2.0.0
 description: "Review and decide Agent capability or Agent-level settings approvals with self-approval protection."
 metadata:
   requires:

@@ -1,6 +1,6 @@
 ---
 name: agent-identity-agent-management
-version: 1.1.0
+version: 2.0.0
 description: "Create, inspect, configure, submit, and approve company-level Agents with GenAuth DataPolicy permission references through the Agent Identity CLI."
 metadata:
   requires:
@@ -46,7 +46,7 @@ agent-identity agents capability update \
    Use version `0` only when the first Capability draft was not created. On a
    conflict, inspect the Agent again and never guess the next version.
 
-6. Submit the frozen capability version with `agents submit --agent-id <id> --version <version>`.
+6. Submit the frozen capability version with `agents capability submit --agent-id <id> --version <version>`.
 7. A different authorized administrator reviews `approvals get --approval-id <id>` and then, after explicit confirmation, runs `approvals approve --approval-id <id> --yes` or `approvals reject --approval-id <id> --yes` with the current version and a reason. Add `--settings` for a settings approval.
 
 Keep owner/requester and approver as separate named profiles and run `auth
@@ -87,9 +87,8 @@ Use the readiness blockers as the gate:
 - suspended/archived or an unknown blocker: stop and report it; do not try to
   repair it by broadening settings or recreating the Agent.
 
-Use `agents suspend`, `agents resume`, and `agents delete`. The nested `agents
-lifecycle` form is migration compatibility only. Suspension is reversible.
-Deletion archives the Agent, is irreversible, and requires an explicit user
+Use only `agents lifecycle pause`, `agents lifecycle resume`, and `agents
+lifecycle archive`. Pause is reversible. Archive is irreversible and requires an explicit user
 decision plus `--yes`; never infer deletion from a request to pause or disable
 access.
 
