@@ -92,7 +92,7 @@ authorization, and secret-handling rules still apply.
 Install the prebuilt CLI from npm:
 
 ```bash
-npm install --global @authing/genauth-agent-cli
+npm install --global @eazo/genauth-agent-cli
 genauth-agent version
 genauth-agent --help
 ```

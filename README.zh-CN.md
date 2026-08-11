@@ -83,7 +83,7 @@ flowchart LR
 终端用户推荐通过 npm 安装：
 
 ```bash
-npm install --global @authing/genauth-agent-cli
+npm install --global @eazo/genauth-agent-cli
 genauth-agent version
 genauth-agent --help
 ```
