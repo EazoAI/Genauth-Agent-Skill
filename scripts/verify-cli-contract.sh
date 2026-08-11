@@ -3,13 +3,13 @@ set -euo pipefail
 
 script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 repo_dir="$(CDPATH= cd -- "$script_dir/.." && pwd)"
-cli="${AGENT_IDENTITY_CLI:-}"
+cli="${GENAUTH_AGENT_CLI:-}"
 
 if [ -z "$cli" ]; then
-  cli="$(command -v agent-identity || true)"
+  cli="$(command -v genauth-agent || true)"
 fi
 if [ -z "$cli" ] || [ ! -x "$cli" ]; then
-  echo "FAIL: set AGENT_IDENTITY_CLI to an executable agent-identity binary" >&2
+  echo "FAIL: set GENAUTH_AGENT_CLI to an executable genauth-agent binary" >&2
   exit 1
 fi
 
@@ -54,20 +54,20 @@ check_flag() {
 }
 
 version_json="$("$cli" version --output json --non-interactive 2>/dev/null || true)"
-if printf '%s' "$version_json" | grep -Fq '"api_version":"agent-identity.cli/v1"'; then
-  pass "CLI API version agent-identity.cli/v1"
+if printf '%s' "$version_json" | grep -Fq '"api_version":"genauth-agent.cli/v1"'; then
+  pass "CLI API version genauth-agent.cli/v1"
 else
-  fail "CLI API version is not agent-identity.cli/v1"
+  fail "CLI API version is not genauth-agent.cli/v1"
 fi
 if printf '%s' "$version_json" | grep -Fq '"server_contract":"genauth-agent-identity-v1"'; then
   pass "server contract genauth-agent-identity-v1"
 else
   fail "server contract is not genauth-agent-identity-v1"
 fi
-if printf '%s' "$version_json" | grep -Fq '"command_contract":"agent-identity.commands/v2"'; then
-  pass "command contract agent-identity.commands/v2"
+if printf '%s' "$version_json" | grep -Fq '"command_contract":"genauth-agent.commands/v2"'; then
+  pass "command contract genauth-agent.commands/v2"
 else
-  fail "command contract is not agent-identity.commands/v2"
+  fail "command contract is not genauth-agent.commands/v2"
 fi
 
 commands='version

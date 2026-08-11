@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Create explicit or policy-allowed silent Agent user authorization and wait for the resulting UserGrant."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Authorize a user

@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Create a company Agent, select GenAuth DataPolicy references, inspect its draft, and submit the frozen capability for approval."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Create a company Agent

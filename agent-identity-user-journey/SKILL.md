@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Run or resume the complete Agent Identity journey: user-pool login, company Agent creation and approval, settings, Credential, user authorization, Token, and fixed Provider call through GenAuth."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Complete Agent Identity user journey
@@ -49,8 +49,8 @@ Create or select named profiles. Both member and administrator login require a
 user pool:
 
 ```bash
-agent-identity auth login --profile-name agent-owner --endpoint <genauth-origin> --user-pool-id <pool> --client-id <client>
-agent-identity auth login --profile-name agent-approver --admin --endpoint <genauth-origin> --user-pool-id <pool> --client-id <client>
+genauth-agent auth login --profile-name agent-owner --endpoint <genauth-origin> --user-pool-id <pool> --client-id <client>
+genauth-agent auth login --profile-name agent-approver --admin --endpoint <genauth-origin> --user-pool-id <pool> --client-id <client>
 ```
 
 The exact login type depends on who owns the Agent; an administrator may be the
@@ -64,15 +64,15 @@ Checkpoint: profile names, subject IDs, login types, selected pool.
 With the owner profile, list and inspect real DataPolicy definitions:
 
 ```bash
-agent-identity --profile agent-owner permissions list --audience <audience> --output json --non-interactive
-agent-identity --profile agent-owner permissions get --permission-id <id> --output json --non-interactive
+genauth-agent --profile agent-owner permissions list --audience <audience> --output json --non-interactive
+genauth-agent --profile agent-owner permissions get --permission-id <id> --output json --non-interactive
 ```
 
 Show the complete owner, application, audience, and permission set. After user
 confirmation, create the Agent and inspect it:
 
 ```bash
-agent-identity --profile agent-owner agents create \
+genauth-agent --profile agent-owner agents create \
   --identifier <stable-id> \
   --display-name <display-name> \
   --description <purpose> \
@@ -82,7 +82,7 @@ agent-identity --profile agent-owner agents create \
   --permission-id <policy-id> \
   --output json --non-interactive
 
-agent-identity --profile agent-owner agents get --agent-id <agent-id> --output json --non-interactive
+genauth-agent --profile agent-owner agents get --agent-id <agent-id> --output json --non-interactive
 ```
 
 Omit `--owner-user-id` for a member-owned Agent; the service binds ownership to
@@ -96,15 +96,15 @@ Checkpoint: Agent ID and fetched Capability draft `record_version`.
 Submit the exact fetched draft version:
 
 ```bash
-agent-identity --profile agent-owner agents capability submit --agent-id <agent-id> --version <draft-version> --output json --non-interactive
+genauth-agent --profile agent-owner agents capability submit --agent-id <agent-id> --version <draft-version> --output json --non-interactive
 ```
 
 Switch actors. The approver must fetch the frozen request and compare requester,
 Agent, audience, permission IDs, before/after boundary, and version:
 
 ```bash
-agent-identity --profile agent-approver approvals get --approval-id <approval-id> --output json --non-interactive
-agent-identity --profile agent-approver approvals approve --approval-id <approval-id> --version <approval-version> --reason <reason> --yes --output json --non-interactive
+genauth-agent --profile agent-approver approvals get --approval-id <approval-id> --output json --non-interactive
+genauth-agent --profile agent-approver approvals approve --approval-id <approval-id> --version <approval-version> --reason <reason> --yes --output json --non-interactive
 ```
 
 Use `approvals reject` only for an explicit rejection. Fetch the Agent again;
@@ -120,11 +120,11 @@ and obtain confirmation for any expansion. Update with the fetched draft
 version, submit, and have the separate approver decide it using `--settings`:
 
 ```bash
-agent-identity --profile agent-owner agents settings get --agent-id <agent-id> --output json --non-interactive
-agent-identity --profile agent-owner agents settings update --agent-id <agent-id> --file <complete-settings.json> --output json --non-interactive
-agent-identity --profile agent-owner agents settings submit --agent-id <agent-id> --output json --non-interactive
-agent-identity --profile agent-approver approvals get --settings --approval-id <approval-id> --output json --non-interactive
-agent-identity --profile agent-approver approvals approve --settings --approval-id <approval-id> --version <approval-version> --reason <reason> --yes --output json --non-interactive
+genauth-agent --profile agent-owner agents settings get --agent-id <agent-id> --output json --non-interactive
+genauth-agent --profile agent-owner agents settings update --agent-id <agent-id> --file <complete-settings.json> --output json --non-interactive
+genauth-agent --profile agent-owner agents settings submit --agent-id <agent-id> --output json --non-interactive
+genauth-agent --profile agent-approver approvals get --settings --approval-id <approval-id> --output json --non-interactive
+genauth-agent --profile agent-approver approvals approve --settings --approval-id <approval-id> --version <approval-version> --reason <reason> --yes --output json --non-interactive
 ```
 
 Checkpoint: settings approval and effective settings version/values.
@@ -135,9 +135,9 @@ Read readiness. When active Capability/settings exist and the only blocker is
 `credential_required`, create the first Credential:
 
 ```bash
-agent-identity --profile agent-owner agents readiness --agent-id <agent-id> --output json --non-interactive
-agent-identity --profile agent-owner credentials create --agent-id <agent-id> --output json --non-interactive
-agent-identity --profile agent-owner agents readiness --agent-id <agent-id> --output json --non-interactive
+genauth-agent --profile agent-owner agents readiness --agent-id <agent-id> --output json --non-interactive
+genauth-agent --profile agent-owner credentials create --agent-id <agent-id> --output json --non-interactive
+genauth-agent --profile agent-owner agents readiness --agent-id <agent-id> --output json --non-interactive
 ```
 
 Retain only `credential_id`, `secret_ref`, and expiry. Require readiness without
@@ -151,7 +151,7 @@ mode additionally requires Agent policy, GenAuth eligibility, and a fresh
 confirmation before `--yes`.
 
 ```bash
-agent-identity --profile <authorization-profile> authorizations create \
+genauth-agent --profile <authorization-profile> authorizations create \
   --agent-id <agent-id> \
   --user-id <admin-only-target-user-id> \
   --audience <audience> \
@@ -164,7 +164,7 @@ For explicit mode, give only the returned `authorization_url` to the target
 human, then wait on the requester's workstation:
 
 ```bash
-agent-identity --profile <authorization-profile> --timeout 10m authorizations wait --authorization-id <authorization-id> --output json --non-interactive
+genauth-agent --profile <authorization-profile> --timeout 10m authorizations wait --authorization-id <authorization-id> --output json --non-interactive
 ```
 
 Exit `6` remains pending. Only `APPROVED` plus an active UserGrant completes
@@ -177,7 +177,7 @@ Checkpoint: authorization request ID/status and active UserGrant ID/version.
 Prefer the closed runtime call; it obtains the Agent Identity Token in-process:
 
 ```bash
-agent-identity --profile <runtime-profile> providers call \
+genauth-agent --profile <runtime-profile> providers call \
   --credential <keychain-secret-ref> \
   --grant-id <user-grant-id> \
   --audience <audience> \

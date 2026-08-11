@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Review and decide Agent capability or Agent-level settings approvals with self-approval protection."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Approve or reject Agent changes
@@ -17,7 +17,7 @@ Run approval commands with an explicit approver profile. First verify the
 profile subject and selected pool, then fetch the current request:
 
 ```bash
-agent-identity --profile <approver> approvals get --approval-id <id> --output json --non-interactive
+genauth-agent --profile <approver> approvals get --approval-id <id> --output json --non-interactive
 ```
 
 For settings requests, add `--settings` to both get and decision commands.

@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Revoke an Agent Credential, UserGrant, or Token JTI after showing its exact target and runtime impact."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Revoke Agent access

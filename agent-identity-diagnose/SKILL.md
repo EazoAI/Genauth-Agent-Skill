@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Diagnose Agent Identity CLI profile, user-pool context, readiness, authorization, Token, gateway, and Provider failures without mutating state."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Diagnose Agent Identity
@@ -21,8 +21,8 @@ while diagnosing.
 1. **CLI contract**
 
    ```bash
-   agent-identity version --output json --non-interactive
-   agent-identity --profile <profile> doctor --output json --non-interactive
+   genauth-agent version --output json --non-interactive
+   genauth-agent --profile <profile> doctor --output json --non-interactive
    ```
 
    Stop on an API/server-contract mismatch. `SECRET_STORE_UNAVAILABLE` is local;
@@ -31,8 +31,8 @@ while diagnosing.
 2. **Identity and user-pool context**
 
    ```bash
-   agent-identity profiles list --output json --non-interactive
-   agent-identity --profile <profile> auth status --output json --non-interactive
+   genauth-agent profiles list --output json --non-interactive
+   genauth-agent --profile <profile> auth status --output json --non-interactive
    ```
 
    Compare expected login type, subject, and pool. A not-found resource in the
@@ -41,9 +41,9 @@ while diagnosing.
 3. **Agent, Capability, settings, and readiness**
 
    ```bash
-   agent-identity --profile <profile> agents get --agent-id <id> --output json --non-interactive
-   agent-identity --profile <profile> agents settings get --agent-id <id> --output json --non-interactive
-   agent-identity --profile <profile> agents readiness --agent-id <id> --output json --non-interactive
+   genauth-agent --profile <profile> agents get --agent-id <id> --output json --non-interactive
+   genauth-agent --profile <profile> agents settings get --agent-id <id> --output json --non-interactive
+   genauth-agent --profile <profile> agents readiness --agent-id <id> --output json --non-interactive
    ```
 
    Classify draft/pending/rejected/inactive Capability or settings separately
@@ -53,7 +53,7 @@ while diagnosing.
 4. **Credential**
 
    ```bash
-   agent-identity --profile <profile> credentials list --agent-id <id> --output json --non-interactive
+   genauth-agent --profile <profile> credentials list --agent-id <id> --output json --non-interactive
    ```
 
    Compare server-active Credential IDs with the caller's non-secret
@@ -63,8 +63,8 @@ while diagnosing.
 5. **Authorization request and UserGrant**
 
    ```bash
-   agent-identity --profile <profile> authorizations get --authorization-id <id> --output json --non-interactive
-   agent-identity --profile <profile> grants list --output json --non-interactive
+   genauth-agent --profile <profile> authorizations get --authorization-id <id> --output json --non-interactive
+   genauth-agent --profile <profile> grants list --output json --non-interactive
    ```
 
    `PENDING` means human action or polling remains; `CONSENTED` means requester
@@ -74,7 +74,7 @@ while diagnosing.
 6. **Token lifecycle**
 
    ```bash
-   agent-identity --profile <profile> tokens list --agent-id <owned-agent-id> --output json --non-interactive
+   genauth-agent --profile <profile> tokens list --agent-id <owned-agent-id> --output json --non-interactive
    ```
 
    Use returned metadata for expiry/revocation. `tokens inspect --token-stdin`
@@ -91,7 +91,7 @@ while diagnosing.
 8. **Audit correlation**
 
    ```bash
-   agent-identity --profile <profile> audit list --agent-id <id> --output json --non-interactive
+   genauth-agent --profile <profile> audit list --agent-id <id> --output json --non-interactive
    ```
 
    Correlate action, actor, resource, timestamp, CLI `request_id`, and any

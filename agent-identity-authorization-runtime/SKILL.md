@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Manage Agent Credentials, explicit or silent user authorization, UserGrants, short-lived Agent Tokens, and GenAuth Provider calls through the Agent Identity CLI."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Authorization and runtime
@@ -19,14 +19,14 @@ Credential is what removes that final blocker. Do not wait for readiness to be
 fully ready before creating the first Credential:
 
 ```bash
-agent-identity credentials create --agent-id <agent-id>
+genauth-agent credentials create --agent-id <agent-id>
 ```
 
 The returned `secret_ref` is safe to retain; the secret itself is not. Rotation and revocation affect running workloads. Show the exact `agent_id/credential_id` and impact, then obtain confirmation before:
 
 ```bash
-agent-identity credentials rotate --agent-id <agent-id> --credential-id <credential-id> --yes
-agent-identity credentials revoke --agent-id <agent-id> --credential-id <credential-id> --yes
+genauth-agent credentials rotate --agent-id <agent-id> --credential-id <credential-id> --yes
+genauth-agent credentials revoke --agent-id <agent-id> --credential-id <credential-id> --yes
 ```
 
 After create or rotate, verify `credentials list --agent-id <agent-id>` and
@@ -41,14 +41,14 @@ For a normal user, never pass `--user-id` and never request silent mode. The CLI
 For a tenant administrator, explicit authorization may specify `--user-id`. Silent authorization is security-sensitive: show target user, audience, all permission IDs, and TTL, obtain explicit confirmation, then request `--mode silent --yes`. A denial must not be downgraded automatically to explicit mode.
 
 ```bash
-agent-identity authorizations create \
+genauth-agent authorizations create \
   --agent-id <agent-id> \
   --user-id <admin-only-target> \
   --audience <audience> \
   --permission-id <policy-id> \
   --mode explicit
 
-agent-identity --timeout 10m authorizations wait --authorization-id <request-id>
+genauth-agent --timeout 10m authorizations wait --authorization-id <request-id>
 ```
 
 Omitting `--redirect-uri` creates a random registered loopback callback and is
@@ -76,7 +76,7 @@ through stdin. The CLI retrieves the PKCE verifier from the OS secret store and
 deletes all local one-time values after success:
 
 ```bash
-printf '%s' "$ONE_TIME_CODE" | agent-identity authorizations exchange \
+printf '%s' "$ONE_TIME_CODE" | genauth-agent authorizations exchange \
   --authorization-id <request-id> \
   --code-stdin
 ```
@@ -86,7 +86,7 @@ For a same-user terminal-only flow, `authorizations consent` stores the code in 
 If the human declines outside the browser page, only the target user's profile may record the terminal decision, and it requires confirmation:
 
 ```bash
-agent-identity authorizations deny \
+genauth-agent authorizations deny \
   --authorization-id <request-id> \
   --reason <reason> \
   --yes
@@ -108,8 +108,8 @@ Agent inside the selected user pool; do not ask for or pass an Agent ID.
 Prefer the closed Provider flow:
 
 ```bash
-agent-identity providers call \
-  --credential keychain://agent-identity/credential/<credential-id> \
+genauth-agent providers call \
+  --credential keychain://genauth-agent/credential/<credential-id> \
   --grant-id <user-grant-id> \
   --audience <audience> \
   --provider <provider-key> \

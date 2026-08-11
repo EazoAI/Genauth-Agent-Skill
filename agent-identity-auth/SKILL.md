@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Use for Agent Identity CLI login, logout, status, profile selection, and tenant administrator user-pool switching."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Agent Identity authentication
@@ -13,14 +13,14 @@ Before acting, read [`../agent-identity-shared/SKILL.md`](../agent-identity-shar
 
 ## Intent mapping
 
-- Check current identity: `agent-identity auth status`
-- List profiles: `agent-identity profiles list`
-- Select an existing profile: `agent-identity profiles use --name <name>`
-- User login: `agent-identity auth login --endpoint <genauth-origin> --user-pool-id <pool> --client-id <client>`
+- Check current identity: `genauth-agent auth status`
+- List profiles: `genauth-agent profiles list`
+- Select an existing profile: `genauth-agent profiles use --name <name>`
+- User login: `genauth-agent auth login --endpoint <genauth-origin> --user-pool-id <pool> --client-id <client>`
 - Tenant administrator login: add `--admin`; a user pool is still mandatory.
-- Switch administrator user pool: `agent-identity auth select-user-pool --user-pool-id <pool>`
-- Refresh an OIDC session: `agent-identity auth refresh`
-- Logout: `agent-identity auth logout`
+- Switch administrator user pool: `genauth-agent auth select-user-pool --user-pool-id <pool>`
+- Refresh an OIDC session: `genauth-agent auth refresh`
+- Logout: `genauth-agent auth logout`
 
 For multi-role work, always create named profiles with `--profile-name` and
 address them using the global `--profile` flag. Recommended names are
@@ -28,7 +28,7 @@ address them using the global `--profile` flag. Recommended names are
 each profile independently:
 
 ```bash
-agent-identity --profile <name> auth status --output json --non-interactive
+genauth-agent --profile <name> auth status --output json --non-interactive
 ```
 
 Do not use `profiles use` inside automated multi-role flows: changing the

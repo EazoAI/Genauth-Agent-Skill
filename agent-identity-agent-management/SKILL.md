@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Create, inspect, configure, submit, and approve company-level Agents with GenAuth DataPolicy permission references through the Agent Identity CLI."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Agent management and approval
@@ -15,13 +15,13 @@ Only company-level Agents are in scope. Personal Agent creation is unsupported.
 
 ## Safe workflow
 
-1. Run `agent-identity auth status` and confirm the selected user pool.
-2. Discover real permissions with `agent-identity permissions list`; use `permissions get --permission-id <id>` for details.
+1. Run `genauth-agent auth status` and confirm the selected user pool.
+2. Discover real permissions with `genauth-agent permissions list`; use `permissions get --permission-id <id>` for details.
 3. Present the exact Agent owner, application, audience, and full permission-ID set to the user. Never infer or silently append a permission.
 4. Create a draft:
 
 ```bash
-agent-identity agents create \
+genauth-agent agents create \
   --identifier <stable-id> \
   --display-name <name> \
   --description <purpose> \
@@ -36,7 +36,7 @@ agent-identity agents create \
    `PARTIAL_AGENT_CREATE`, save it without recreating the Agent:
 
 ```bash
-agent-identity agents capability update \
+genauth-agent agents capability update \
   --agent-id <id> \
   --audience <https-audience> \
   --permission-id <policy-id> \
@@ -64,8 +64,8 @@ write. A pending request should be continued, not duplicated.
 Settings are Agent-level only. Prepare a complete JSON or YAML file and run:
 
 ```bash
-agent-identity agents settings update --agent-id <id> --file <settings.json>
-agent-identity agents settings submit --agent-id <id>
+genauth-agent agents settings update --agent-id <id> --file <settings.json>
+genauth-agent agents settings submit --agent-id <id>
 ```
 
 Always show configured and effective values. Treat `SILENT_IF_ALLOWED`, longer Token TTL, longer UserGrant TTL, broader redirect URIs, or disabled realtime decision as security-sensitive. Get explicit user confirmation before applying an expansion. Tightening may activate immediately, while expansion can require approval.

@@ -53,22 +53,16 @@ sync_github:
           exit 1
           ;;
       esac
-    - |
-      askpass_path="$CI_PROJECT_DIR/.git/github-askpass.sh"
-      printf '%s\n' \
-        '#!/bin/sh' \
-        'case "$1" in' \
-        '  *Username*) printf "%s\\n" "x-access-token" ;;' \
-        '  *Password*) printf "%s\\n" "$GITHUB_TOKEN" ;;' \
-        '  *) exit 1 ;;' \
-        'esac' > "$askpass_path"
-      chmod 700 "$askpass_path"
-      export GIT_ASKPASS="$askpass_path"
-      export GIT_TERMINAL_PROMPT=0
-      git remote remove github 2>/dev/null || true
-      git remote add github "https://github.com/${AGENT_SKILL_GITHUB_REPOSITORY}.git"
+    - git remote remove github 2>/dev/null || true
+    - git remote add github "https://github.com/${AGENT_SKILL_GITHUB_REPOSITORY}.git"
   script:
     - |
+      github_basic_auth="$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')"
+      export GIT_CONFIG_COUNT=1
+      export GIT_CONFIG_KEY_0='http.https://github.com/.extraheader'
+      export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $github_basic_auth"
+      export GIT_TERMINAL_PROMPT=0
+      unset github_basic_auth
       if [ -n "${CI_COMMIT_TAG:-}" ]; then
         git fetch origin "refs/tags/${CI_COMMIT_TAG}:refs/tags/${CI_COMMIT_TAG}"
         echo "Pushing tag ${CI_COMMIT_TAG} to GitHub repository ${AGENT_SKILL_GITHUB_REPOSITORY}"
@@ -77,10 +71,9 @@ sync_github:
         target_branch="${GITHUB_TARGET_BRANCH:-$CI_DEFAULT_BRANCH}"
         echo "Pushing ${CI_COMMIT_SHA} to GitHub branch ${target_branch} in ${AGENT_SKILL_GITHUB_REPOSITORY}"
         if ! git push github "${CI_COMMIT_SHA}:refs/heads/${target_branch}"; then
-          echo "GitHub rejected the non-fast-forward update. This job never force-pushes; reconcile the target branch explicitly." >&2
+          echo "GitHub push failed. Check authentication, repository access, and whether the target branch has diverged; this job never force-pushes." >&2
           exit 1
         fi
       fi
   after_script:
-    - rm -f "$CI_PROJECT_DIR/.git/github-askpass.sh"
     - git remote remove github 2>/dev/null || true

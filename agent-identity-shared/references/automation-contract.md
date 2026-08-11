@@ -15,7 +15,7 @@ One person may hold several business roles, but the owner/requester cannot be
 the approver for their own request. Before each write, run:
 
 ```bash
-agent-identity --profile <profile> auth status --output json --non-interactive
+genauth-agent --profile <profile> auth status --output json --non-interactive
 ```
 
 Verify `login_type`, subject identity, and `selected_user_pool_id`. All actors
@@ -29,7 +29,7 @@ Every non-browser command must return one JSON object shaped as:
 
 ```json
 {
-  "api_version": "agent-identity.cli/v1",
+  "api_version": "genauth-agent.cli/v1",
   "kind": "ResourceKind",
   "data": {},
   "request_id": "optional-server-request-id",
@@ -38,7 +38,7 @@ Every non-browser command must return one JSON object shaped as:
 ```
 
 The `version` command must additionally report
-`data.command_contract=agent-identity.commands/v2`. Failures use `error.code` and can include `error.remediation`. Read identifiers
+`data.command_contract=genauth-agent.commands/v2`. Failures use `error.code` and can include `error.remediation`. Read identifiers
 only from `data` or `error.remediation`; never scrape human text. Treat a
 missing field, unexpected `kind`, incompatible `api_version`, or an incompatible
 command contract as a stop.

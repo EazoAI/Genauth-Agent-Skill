@@ -4,7 +4,7 @@ version: 2.0.0
 description: "Verify Agent Identity CLI installation, CLI/server contract compatibility, local Skill links, profile context, user-pool selection, and OS secret-store readiness without mutating remote resources."
 metadata:
   requires:
-    bins: ["agent-identity"]
+    bins: ["genauth-agent"]
 ---
 
 # Set up and verify Agent Identity tooling
@@ -16,28 +16,28 @@ profile selection, or local Skill installation.
 ## Verify the CLI contract
 
 ```bash
-command -v agent-identity
-agent-identity version --output json --non-interactive
-agent-identity --help
+command -v genauth-agent
+genauth-agent version --output json --non-interactive
+genauth-agent --help
 ```
 
-Require API `agent-identity.cli/v1`, command contract
-`agent-identity.commands/v2`, and server contract `genauth-agent-identity-v1`.
-Do not use `agent-identity --version`; the supported interface is the `version`
+Require API `genauth-agent.cli/v1`, command contract
+`genauth-agent.commands/v2`, and server contract `genauth-agent-identity-v1`.
+Do not use `genauth-agent --version`; the supported interface is the `version`
 subcommand. A CLI with `commands/v1` must not be used with these 2.x Skills.
 
 When working from the source repository, run its companion check:
 
 ```bash
-AGENT_IDENTITY_CLI="$(command -v agent-identity)" ./scripts/verify-cli-contract.sh
+GENAUTH_AGENT_CLI="$(command -v genauth-agent)" ./scripts/verify-cli-contract.sh
 ```
 
 ## Verify profiles and local prerequisites
 
 ```bash
-agent-identity profiles list --output json --non-interactive
-agent-identity --profile <name> auth status --output json --non-interactive
-agent-identity --profile <name> doctor --output json --non-interactive
+genauth-agent profiles list --output json --non-interactive
+genauth-agent --profile <name> auth status --output json --non-interactive
+genauth-agent --profile <name> doctor --output json --non-interactive
 ```
 
 Check that the selected profile has the intended login type, subject, GenAuth

@@ -1,6 +1,6 @@
 # GenAuth Agent Identity Skill Instructions
 
-- Skills orchestrate the `agent-identity` CLI and never call Agent Identity or
+- Skills orchestrate the `genauth-agent` CLI and never call Agent Identity or
   GenAuth APIs directly.
 - Keep `agent-identity-shared` as the mandatory trust-boundary and output
   contract for all composed Skills.
