@@ -1,0 +1,82 @@
+image:
+  name: alpine/git:latest
+  entrypoint: [""]
+
+stages:
+  - sync
+
+variables:
+  GIT_DEPTH: "0"
+  GIT_STRATEGY: fetch
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - when: never
+
+sync_github:
+  stage: sync
+  resource_group: github-mirror
+  interruptible: false
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - when: never
+  before_script:
+    - git --version
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    - |
+      if [ -z "${GITHUB_TOKEN:-}" ]; then
+        echo "Missing protected and masked GitLab CI/CD variable: GITHUB_TOKEN" >&2
+        exit 1
+      fi
+    - |
+      if [ -z "${AGENT_SKILL_GITHUB_REPOSITORY:-}" ]; then
+        echo "Missing GitLab CI/CD variable: AGENT_SKILL_GITHUB_REPOSITORY (expected owner/repository)" >&2
+        exit 1
+      fi
+      case "$AGENT_SKILL_GITHUB_REPOSITORY" in
+        */*) ;;
+        *)
+          echo "AGENT_SKILL_GITHUB_REPOSITORY must use owner/repository format" >&2
+          exit 1
+          ;;
+      esac
+      case "$AGENT_SKILL_GITHUB_REPOSITORY" in
+        http:*|https:*|*.git|*..*|*' '*)
+          echo "AGENT_SKILL_GITHUB_REPOSITORY must not contain a URL, .git suffix, spaces, or dot traversal" >&2
+          exit 1
+          ;;
+      esac
+    - |
+      askpass_path="$CI_PROJECT_DIR/.git/github-askpass.sh"
+      printf '%s\n' \
+        '#!/bin/sh' \
+        'case "$1" in' \
+        '  *Username*) printf "%s\\n" "x-access-token" ;;' \
+        '  *Password*) printf "%s\\n" "$GITHUB_TOKEN" ;;' \
+        '  *) exit 1 ;;' \
+        'esac' > "$askpass_path"
+      chmod 700 "$askpass_path"
+      export GIT_ASKPASS="$askpass_path"
+      export GIT_TERMINAL_PROMPT=0
+      git remote remove github 2>/dev/null || true
+      git remote add github "https://github.com/${AGENT_SKILL_GITHUB_REPOSITORY}.git"
+  script:
+    - |
+      if [ -n "${CI_COMMIT_TAG:-}" ]; then
+        git fetch origin "refs/tags/${CI_COMMIT_TAG}:refs/tags/${CI_COMMIT_TAG}"
+        echo "Pushing tag ${CI_COMMIT_TAG} to GitHub repository ${AGENT_SKILL_GITHUB_REPOSITORY}"
+        git push github "refs/tags/${CI_COMMIT_TAG}:refs/tags/${CI_COMMIT_TAG}"
+      else
+        target_branch="${GITHUB_TARGET_BRANCH:-$CI_DEFAULT_BRANCH}"
+        echo "Pushing ${CI_COMMIT_SHA} to GitHub branch ${target_branch} in ${AGENT_SKILL_GITHUB_REPOSITORY}"
+        if ! git push github "${CI_COMMIT_SHA}:refs/heads/${target_branch}"; then
+          echo "GitHub rejected the non-fast-forward update. This job never force-pushes; reconcile the target branch explicitly." >&2
+          exit 1
+        fi
+      fi
+  after_script:
+    - rm -f "$CI_PROJECT_DIR/.git/github-askpass.sh"
+    - git remote remove github 2>/dev/null || true
