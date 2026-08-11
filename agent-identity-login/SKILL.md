@@ -21,10 +21,15 @@ genauth-agent auth login --endpoint <genauth-origin> --profile-name <profile>
 
 GenAuth discovers the dedicated root-user-pool OIDC client from the endpoint.
 After authentication, the CLI auto-selects the only manageable user pool. If
-it returns `USER_POOL_SELECTION_REQUIRED`, show the returned manageable pool
-IDs, ask the administrator to choose one, then repeat with
+it returns `USER_POOL_SELECTION_REQUIRED`, show each returned manageable pool's
+name and ID (plus domain when present), ask the administrator to choose one,
+then repeat with
 `--user-pool-id <pool>`. The pool identifies the post-login management context;
 it is not an OIDC login credential.
+
+For a later switch, first run `auth list-user-pools`, present each returned name,
+domain, and ID and mark the current selection. Never ask the user to choose from
+bare IDs or reuse a pool ID from another endpoint or profile.
 
 Success requires `genauth-agent auth status` to confirm
 `login_type=tenant_admin` and the selected user pool. A printed browser URL,

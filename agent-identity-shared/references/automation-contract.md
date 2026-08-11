@@ -21,7 +21,8 @@ the approver for their own request. Before each write, run:
 genauth-agent --profile <profile> auth status --output json --non-interactive
 ```
 
-Verify `login_type`, subject identity, and `selected_user_pool_id`. All actors
+Verify `login_type`, subject identity, `selected_user_pool_name`, and
+`selected_user_pool_id`. All actors
 participating in one journey must intentionally select the same user pool.
 Never switch the global default profile merely to save typing in an automated
 workflow.
@@ -52,7 +53,7 @@ Keep a redacted, process-local checkpoint ledger while the journey is active:
 
 | Step | Retain | Never retain |
 | --- | --- | --- |
-| Login | profile name, login type, subject ID, user-pool ID | session Token |
+| Login | profile name, login type, subject ID, user-pool name and ID | session Token |
 | Agent create | Agent ID, identifier | hidden server credentials |
 | Capability | draft/active record version, audience, permission IDs | inferred version |
 | Approval | approval ID, approval version, requester ID, type | approval links containing secrets |

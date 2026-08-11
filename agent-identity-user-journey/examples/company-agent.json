@@ -6,7 +6,6 @@
   "application_id": "<genauth-application-id>",
   "capabilities": [
     {
-      "audience": "https://api.example.com/orders",
       "permission_ids": [
         "<genauth-data-policy-id>"
       ]

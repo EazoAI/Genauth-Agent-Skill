@@ -29,7 +29,8 @@ Resolve these non-secret values before the first write:
 - requester/owner profile and either a different approver profile or a
   confirmed current user-pool root administrator self-approval path;
 - company Agent identifier, display name, purpose, application ID, and owner;
-- ResourceServer audience and exact GenAuth DataPolicy IDs;
+- exact GenAuth DataPolicy IDs; the CLI derives ResourceServer audience from
+  the selected Application;
 - Agent settings: authorization mode, Token TTL, UserGrant maximum TTL,
   Credential TTL/rotation overlap, redirect URIs, and realtime-decision choice;
 - authorization actor: administrator target user and explicit or
@@ -54,25 +55,28 @@ genauth-agent auth login --profile-name agent-approver --endpoint <genauth-origi
 ```
 
 The only CLI login type is `tenant_admin`. If multiple manageable pools are
-returned, select one of those exact IDs and ensure every profile uses the same
-pool. Use a different human/profile for ordinary approval. Only the current user-pool root
+returned, show each name and ID plus domain when present, then select the exact
+ID corresponding to the user's choice and ensure every profile uses the same
+named pool. Before a later switch, run `auth list-user-pools`; never ask the user
+to choose from bare IDs. Use a different human/profile for ordinary approval. Only the current user-pool root
 administrator may reuse the owner profile to approve their own request; the
 server verifies that role and self-rejection remains forbidden. Verify every
 profile with `--profile <name> auth status` and require the same selected pool.
 
-Checkpoint: profile names, subject IDs, login types, selected pool.
+Checkpoint: profile names, subject IDs, login types, and selected pool name and
+ID.
 
 ## Phase 2: discover permissions and create the company Agent
 
 With the owner profile, list and inspect real DataPolicy definitions:
 
 ```bash
-genauth-agent --profile agent-owner permissions list --audience <audience> --output json --non-interactive
+genauth-agent --profile agent-owner permissions list --output json --non-interactive
 genauth-agent --profile agent-owner permissions get --permission-id <id> --output json --non-interactive
 ```
 
-Show the complete owner, application, audience, and permission set. After user
-confirmation, create the Agent and inspect it:
+Show the complete owner, application, and permission set. Do not ask the user
+for audience. After user confirmation, create the Agent and inspect it:
 
 ```bash
 genauth-agent --profile agent-owner agents create \
@@ -81,7 +85,6 @@ genauth-agent --profile agent-owner agents create \
   --description <purpose> \
   --owner-user-id <admin-only-owner-id> \
   --application-id <application-id> \
-  --audience <audience> \
   --permission-id <policy-id> \
   --output json --non-interactive
 
@@ -91,7 +94,8 @@ genauth-agent --profile agent-owner agents get --agent-id <agent-id> --output js
 Recover `PARTIAL_AGENT_CREATE` exactly as documented in the shared recovery
 reference.
 
-Checkpoint: Agent ID and fetched Capability draft `record_version`.
+Checkpoint: Agent ID, CLI-resolved audience, and fetched Capability draft
+`record_version`.
 
 ## Phase 3: submit and approve Capability
 

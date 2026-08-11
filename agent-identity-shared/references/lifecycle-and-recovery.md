@@ -38,8 +38,9 @@ names not recognized by the installed CLI contract are a hard stop.
   `--append-permission`, or `--replace-permissions`; present the resulting full
   set before retrying.
 - `USER_POOL_SELECTION_REQUIRED` or `USER_POOL_NOT_MANAGEABLE`: select a real
-  manageable pool through login or `auth select-user-pool`; never edit profile
-  storage directly.
+  manageable pool by matching its returned name/domain to its ID. For an
+  existing profile, run `auth list-user-pools` before `auth select-user-pool`;
+  never ask the user to choose from bare IDs or edit profile storage directly.
 - `FORBIDDEN_USER_AUTHORIZATION_MODE`: a member attempted another-user or
   silent authorization. Use self explicit authorization, or switch to a real
   administrator profile after confirming intent.

@@ -187,7 +187,6 @@ AI Agent 会返回 GenAuth 登录地址或打开浏览器。用户完成登录�
 - 使用 agent-owner 创建公司级 Agent
 - Agent identifier：orders_agent
 - application ID：<application-id>
-- audience：https://api.example.com/orders
 - 权限：先查询并让我确认 orders.read 对应的 DataPolicy ID
 - 使用 agent-approver 审批 Capability 和 Agent 设置
 - 授权模式使用 explicit-only，Token TTL 10 分钟
@@ -212,9 +211,11 @@ genauth-agent auth login \
 
 这是当前唯一的 CLI 登录身份。CLI 自动发现根用户池专用应用，不接受
 `--admin` 或 `--client-id`。若管理员仅有一个可管理用户池会自动选择；多个时从
-GenAuth 返回的列表中选择，再使用 `--user-pool-id` 重试，或登录后切换：
+GenAuth 返回的名称、域名和 ID 列表中选择，再使用 `--user-pool-id` 重试。已有
+Profile 在切换前先获取实时的可管理用户池列表：
 
 ```bash
+genauth-agent --profile agent-approver auth list-user-pools
 genauth-agent --profile agent-approver auth select-user-pool \
   --user-pool-id <user-pool-id>
 ```
@@ -286,20 +287,20 @@ genauth-agent --profile agent-approver auth status --output json --non-interacti
 
 ```bash
 genauth-agent --profile agent-owner permissions list \
-  --audience <audience> --output json --non-interactive
+  --output json --non-interactive
 
 genauth-agent --profile agent-owner agents create \
   --identifier <stable-id> \
   --display-name <display-name> \
   --description <purpose> \
   --application-id <application-id> \
-  --audience <audience> \
   --permission-id <data-policy-id> \
   --output json --non-interactive
 ```
 
 管理员代创建时必须提供 `--owner-user-id`；成员创建时省略该参数，服务端绑定当前
-成员。创建输入示例见
+成员。CLI 会根据所选 Application 自动推导 audience，用户只选择 DataPolicy，
+不手工填写 audience。创建输入示例见
 [`company-agent.json`](agent-identity-user-journey/examples/company-agent.json)。
 
 ### 提交和审批 Capability

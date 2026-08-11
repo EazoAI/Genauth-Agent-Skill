@@ -19,9 +19,12 @@ Before acting, read [`../agent-identity-shared/SKILL.md`](../agent-identity-shar
 - Tenant administrator login: `genauth-agent auth login --endpoint <genauth-origin> --profile-name <name>`
 - The CLI discovers the dedicated OIDC client. Never ask for or add `--client-id`.
 - Do not ask for a user pool before the first browser login. If GenAuth returns
-  multiple manageable pools, ask the administrator to choose from that returned
-  list and retry with `--user-pool-id <pool>`.
+  multiple manageable pools, show each returned name and ID (plus domain when
+  present), ask the administrator to choose from that list, and retry with
+  `--user-pool-id <pool>`.
 - Switch administrator user pool: `genauth-agent auth select-user-pool --user-pool-id <pool>`
+- Before switching, run `genauth-agent auth list-user-pools` and show the name,
+  domain, and ID of every option, including which one is currently selected.
 - Refresh an OIDC session: `genauth-agent auth refresh`
 - Logout: `genauth-agent auth logout`
 
@@ -44,5 +47,5 @@ Browser authorization is a human step. Return the printed GenAuth URL to the use
 When switching a user pool, rely on the CLI's server-side validation. A changed local file or profile display alone is not proof that the administrator can manage that pool.
 
 Login completion evidence is the JSON status containing the expected login
-type, subject identity, selected user-pool ID, and usable session. A returned
+type, subject identity, selected user-pool name and ID, and usable session. A returned
 authorization URL or a successful browser page is only an intermediate state.

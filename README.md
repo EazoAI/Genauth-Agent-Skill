@@ -203,7 +203,6 @@ Use the agent-identity-user-journey Skill to complete this flow:
 - create a company Agent with profile agent-owner;
 - identifier: orders_agent;
 - application ID: APPLICATION_ID;
-- audience: https://api.example.com/orders;
 - discover the DataPolicy for orders.read and let me confirm it;
 - use profile agent-approver for Capability and settings approval;
 - use explicit-only authorization and a 10-minute Token TTL;
@@ -230,10 +229,12 @@ genauth-agent auth login \
 This is the only supported CLI login identity. The CLI discovers its dedicated
 root-user-pool application and does not accept `--admin` or `--client-id`.
 When the administrator owns exactly one pool it is selected automatically.
-With multiple pools, choose one returned by GenAuth and retry with
-`--user-pool-id`, or switch the validated context later:
+With multiple pools, show the returned name, domain, and ID before choosing and
+retrying with `--user-pool-id`. Before switching an existing profile, fetch the
+live named list:
 
 ```bash
+genauth-agent --profile agent-approver auth list-user-pools
 genauth-agent --profile agent-approver auth select-user-pool \
   --user-pool-id USER_POOL_ID
 ```
@@ -310,7 +311,6 @@ state before continuing.
 
 ```bash
 genauth-agent --profile agent-owner permissions list \
-  --audience https://api.example.com/orders \
   --output json --non-interactive
 
 genauth-agent --profile agent-owner agents create \
@@ -318,14 +318,15 @@ genauth-agent --profile agent-owner agents create \
   --display-name "Orders Agent" \
   --description "Calls approved order APIs for authorized users" \
   --application-id APPLICATION_ID \
-  --audience https://api.example.com/orders \
   --permission-id DATA_POLICY_ID \
   --output json --non-interactive
 ```
 
 An administrator creating on behalf of a user must add
 `--owner-user-id OWNER_USER_ID`. A member create omits that flag and the server
-binds ownership to the logged-in member. See
+binds ownership to the logged-in member. The CLI derives audience from the
+selected Application; users choose DataPolicy permissions and never enter an
+audience manually. See
 [`company-agent.json`](agent-identity-user-journey/examples/company-agent.json)
 for a complete file shape.
 

@@ -16,8 +16,8 @@ Only company-level Agents are in scope. Personal Agent creation is unsupported.
 ## Safe workflow
 
 1. Run `genauth-agent auth status` and confirm the selected user pool.
-2. Discover real permissions with `genauth-agent permissions list`; use `permissions get --permission-id <id>` for details.
-3. Present the exact Agent owner, application, audience, and full permission-ID set to the user. Never infer or silently append a permission.
+2. Discover real permissions with `genauth-agent permissions list`; use `permissions get --permission-id <id>` for details. Do not require an audience filter.
+3. Present the exact Agent owner, application, and full permission-ID set to the user. Never infer or silently append a permission. Do not ask for audience: the CLI derives it from the selected Application and GenAuth validates it.
 4. Create a draft:
 
 ```bash
@@ -27,7 +27,6 @@ genauth-agent agents create \
   --description <purpose> \
   --owner-user-id <user-id> \
   --application-id <application-id> \
-  --audience <https-audience> \
   --permission-id <policy-id>
 ```
 
@@ -38,13 +37,14 @@ genauth-agent agents create \
 ```bash
 genauth-agent agents capability update \
   --agent-id <id> \
-  --audience <https-audience> \
   --permission-id <policy-id> \
   --version <current-draft-version>
 ```
 
-   Use version `0` only when the first Capability draft was not created. On a
-   conflict, inspect the Agent again and never guess the next version.
+   The CLI resolves the Agent's Application and derives audience again during
+   recovery. Use version `0` only when the first Capability draft was not
+   created. On a conflict, inspect the Agent again and never guess the next
+   version.
 
 6. Submit the frozen capability version with `agents capability submit --agent-id <id> --version <version>`.
 7. An authorized administrator reviews `approvals get --approval-id <id>` and then, after explicit confirmation, runs `approvals approve --approval-id <id> --yes` or `approvals reject --approval-id <id> --yes` with the current version and a reason. Use a different administrator unless the requester is the current user-pool root administrator and is approving their own request. Self-rejection is never allowed. Add `--settings` for a settings approval.
