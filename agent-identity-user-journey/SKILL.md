@@ -143,11 +143,15 @@ Read readiness. When active Capability/settings exist and the only blocker is
 ```bash
 genauth-agent --profile agent-owner agents readiness --agent-id <agent-id> --output json --non-interactive
 genauth-agent --profile agent-owner credentials create --agent-id <agent-id> --output json --non-interactive
+genauth-agent --profile agent-owner agents permissions sync --agent-id <agent-id> --yes --output json --non-interactive
 genauth-agent --profile agent-owner agents readiness --agent-id <agent-id> --output json --non-interactive
 ```
 
-Retain only `credential_id`, `secret_ref`, and expiry. Require readiness without
-blockers before continuing.
+Retain only `credential_id`, `secret_ref`, and expiry. Capability approval
+normally leaves DataPolicy reconciliation `pending`; the explicit sync is the
+transition to `synced`. Require readiness without blockers before continuing.
+If a historical Agent says `synced` but a Provider returns 403, replay this
+idempotent sync once to repair drift before changing any permission boundary.
 
 ## Phase 6: authorize the user
 
@@ -155,6 +159,13 @@ Use an administrator profile. An explicit request may select `--user-id`;
 silent mode additionally requires Agent policy, GenAuth eligibility, and a
 fresh confirmation before `--yes`. The target human completes explicit consent
 in the GenAuth browser and does not need a CLI member profile.
+
+The administrator permission catalog is not evaluated for a target user, so
+its `silent_grantable` value cannot prove target eligibility. For silent mode,
+verify effective settings are `SILENT_IF_ALLOWED`, show and confirm the exact
+target boundary, then let the create request obtain GenAuth's target-specific
+decision. Treat any silent-policy, inactive-subject, or policy-decision denial
+as terminal and never fall back to explicit automatically.
 
 ```bash
 genauth-agent --profile <authorization-profile> authorizations create \
@@ -173,8 +184,11 @@ human, then wait on the requester's workstation:
 genauth-agent --profile <authorization-profile> --timeout 10m authorizations wait --authorization-id <authorization-id> --output json --non-interactive
 ```
 
-Exit `6` remains pending. Only `APPROVED` plus an active UserGrant completes
-this phase.
+Exit `6` remains pending. Only `APPROVED` plus an active, unexpired UserGrant
+completes this phase. If `grants list` warns that an `ACTIVE` record has already
+passed `expires_at`, do not use it. A terminal authorization automatically
+clears local PKCE/callback state; `local_cleanup_required=true` is a local
+secret-store repair condition, not permission to duplicate the request.
 
 Checkpoint: authorization request ID/status and active UserGrant ID/version.
 

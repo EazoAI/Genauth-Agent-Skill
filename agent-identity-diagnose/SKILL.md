@@ -58,7 +58,9 @@ while diagnosing.
 
    Compare server-active Credential IDs with the caller's non-secret
    `keychain://` reference. Never open Keychain material. Missing local and
-   revoked/expired server credentials are distinct failures.
+   revoked/expired server credentials are distinct failures. Also treat an
+   `ACTIVE` item past `expires_at` and a `ROTATING` item past
+   `overlap_ends_at` as unusable, retaining the CLI lifecycle warning.
 
 5. **Authorization request and UserGrant**
 
@@ -70,6 +72,10 @@ while diagnosing.
    `PENDING` means human action or polling remains; `CONSENTED` means requester
    exchange remains; denial/cancellation/expiry is terminal. For a UserGrant,
    match subject, Agent, audience, permission set, status, version, and expiry.
+   Treat `expires_at <= now` as unusable even when the server reports `ACTIVE`,
+   and retain the CLI warning as evidence. `local_cleanup_required=true` means
+   terminal server state was reached but local one-time Keychain cleanup needs
+   repair; it is not a reason to repeat the authorization write.
 
 6. **Token lifecycle**
 

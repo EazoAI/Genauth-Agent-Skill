@@ -61,6 +61,17 @@ never edit the local profile file directly.
 - For every automated, non-browser invocation, add the persistent flags
   `--output json --non-interactive`. Browser login is the only exception; it
   must remain an explicit human interaction.
+- Do not run `--help` as an exploratory step inside a live workflow. The
+  compatible `version` contract and this Skill package define the command
+  surface; `--help` is a release-time/manual verification tool and does not
+  return the JSON machine envelope.
+- Execute each documented `genauth-agent` invocation as one standalone command.
+  Do not add `2>&1`, pipes, `head`, trailing `echo $?`, or other shell wrappers;
+  read stdout/stderr and the process exit code from the execution tool.
+- After `version` confirms the compatible contract, do not inspect the binary,
+  npm installation, generated JavaScript, or Skill files with `which`, `rg`,
+  `ls`, `readlink`, or similar discovery commands. Use the exact commands in
+  the loaded Skills and stop on an unknown field or command contract.
 - Read only JSON stdout fields: `api_version`, `kind`, `data`, `request_id`, `warnings`, and `error.code`.
 - Never parse table text or debug logs.
 - Exit codes: `2` invalid input, `3` login/session, `4` denied, `5` state/not found, `6` pending, `7` retryable dependency, `8` conflict, `9` internal.

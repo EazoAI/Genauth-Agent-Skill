@@ -88,7 +88,8 @@ Do not report the overall journey as complete until all of these are true:
 - Agent Capability is active.
 - effective Agent settings are known and acceptable.
 - Agent readiness has no blocker after an active Credential exists.
-- an active UserGrant matches the subject, audience, and permission set.
+- an active, unexpired UserGrant matches the subject, audience, and permission
+  set.
 - `providers call` returned a Provider response, or the user explicitly requested
   only Token issuance and that operation succeeded.
 

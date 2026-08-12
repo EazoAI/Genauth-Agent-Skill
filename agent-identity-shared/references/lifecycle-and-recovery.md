@@ -49,6 +49,9 @@ names not recognized by the installed CLI contract are a hard stop.
   because the browser is still open.
 - `AUTHORIZATION_DENIED`: terminal. Report the denial and do not silently retry
   with a different mode or broader permission set.
+- Terminal authorization states remove local PKCE, consent-code, callback, and
+  URL entries. If `local_cleanup_required=true` is returned, report the local
+  Keychain cleanup condition and do not create a duplicate request.
 - `PKCE_NOT_FOUND` or `AUTHORIZATION_URL_NOT_FOUND`: the local one-time context
   cannot safely complete the request. Inspect/cancel the existing request and
   start a new explicit request only with user confirmation.
@@ -70,7 +73,8 @@ After interruption, run read-only commands in this order:
 2. `agents get`, `agents settings get`, and `agents readiness`.
 3. relevant `approvals get/list` if a change was submitted.
 4. `credentials list` without reading Keychain secrets.
-5. `authorizations get` and `grants list`.
+5. `authorizations get` and `grants list`; reject grants whose `expires_at` has
+   passed even when their displayed status is still `ACTIVE`.
 6. `tokens list` and `audit list` when runtime evidence is needed.
 
 Resume from observed state. Never rerun all writes from the beginning.

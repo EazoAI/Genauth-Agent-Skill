@@ -55,7 +55,9 @@ profile for self-approval, but the server remains authoritative for that role.
 Run `auth status` immediately before submit and decision writes. Capture the `agent_id`,
 Capability draft `record_version`, approval ID, and approval version from JSON.
 After the decision, fetch `agents get` again and confirm the active Capability;
-do not reuse the submitted draft response as proof of activation.
+do not reuse the submitted draft response as proof of activation. A newly
+approved Capability is expected to report `permission_sync_status=pending`,
+not `synced`; approval alone is never proof that DataPolicy reconciliation ran.
 
 For interruption recovery, use `agents list`, `agents get`, `agents settings
 get`, `agents readiness`, and the appropriate `approvals list/get` before any
@@ -79,13 +81,27 @@ exists. If a draft exists, fetch it and pass that draft's `record_version`; do
 not guess a later version after a conflict. The same
 `expected_record_version` rule applies inside a settings file.
 
-Never claim readiness only because approval succeeded. Verify the returned readiness blockers, active settings, active Capability, and an active local Credential.
+Never claim readiness only because approval succeeded. Verify the returned readiness blockers, active settings, active Capability, an active local Credential,
+and `permission_sync_status=synced` after an explicit reconciliation:
+
+```bash
+genauth-agent agents permissions sync --agent-id <agent-id> --yes
+```
+
+Run this after creating the first local Credential. It is idempotent and may
+also be used to repair assignment drift when runtime access returns 403 even
+though an older Capability already says `synced`. Re-read readiness after the
+sync; do not broaden policies to repair a synchronization failure.
 
 Use the readiness blockers as the gate:
 
 - Capability or settings blocker: return to the matching draft/approval state.
 - `credential_required` as the only blocker: continue with first Credential
-  creation; this is the expected bootstrap state.
+  creation and then explicit permission sync; this is the expected bootstrap
+  state.
+- `data_permission_sync_pending`, `data_permission_sync_failed`, or a stale
+  false-positive `synced` accompanied by runtime 403: run the explicit sync
+  once and inspect the returned error/readiness before doing anything else.
 - suspended/archived or an unknown blocker: stop and report it; do not try to
   repair it by broadening settings or recreating the Agent.
 
