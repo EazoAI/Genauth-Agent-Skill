@@ -85,6 +85,58 @@ never edit the local profile file directly.
   from JSON `data`, plus the top-level `request_id`. Re-read the resource before
   the next write; never derive a version by incrementing locally.
 
+## User-facing presentation contract
+
+These rules apply to every response produced while using any Agent Identity
+Skill:
+
+- Default to Simplified Chinese for the entire user-facing conversation unless
+  the user explicitly requests another language. Keep protocol values, status
+  enums, command names, IDs, and error codes unchanged, and explain them in
+  Chinese when useful.
+- Render every list or multi-item comparison as a Markdown table with clear
+  Chinese column names. This includes user pools, Agents, permissions,
+  approvals, settings, Credentials, AuthorizationRequests, UserGrants, Tokens,
+  audit records, Provider results, checkpoints, and selectable candidates. Do
+  not present these as dense prose, raw JSON, or a sequence of plain text
+  lines. Use `—` for a missing value and `<br>` for multiple values in one cell.
+- A response that requires the human to click, log in, approve, consent,
+  choose, or confirm must start the handoff with a level-two heading whose
+  first text is `⚠️ 需要你操作`. Never bury the action in a progress paragraph
+  or make it look like ordinary conversation.
+- Under that heading, state one imperative sentence such as `请现在点击下面的
+  授权链接完成确认。`, show the non-secret context in a Markdown table, and put
+  the single primary action on its own line as a bold Markdown link. State
+  exactly what the human must do on the page and what the Agent will verify or
+  continue afterward.
+- Do not mix a required human action with unrelated progress details. Finish
+  the handoff after the action instructions and wait or poll using the
+  documented command. Do not merely say `Please open`, `Waiting for consent`,
+  or their Chinese equivalents without the prominent heading and explicit
+  instruction.
+
+Use this structure, replacing every placeholder with current non-secret data:
+
+```markdown
+## ⚠️ 需要你操作：<操作名称>
+
+请现在<明确动作>。
+
+| 项目 | 内容 |
+| --- | --- |
+| Agent | <名称>（`<agent-id>`） |
+| 用户池 | <名称>（`<user-pool-id>`） |
+| 申请权限 | <权限名称与 ID> |
+| 当前状态 | `PENDING` |
+
+👉 **[立即<操作名称>](<single-action-url>)**
+
+打开页面后：<步骤 1> → <步骤 2>。完成后我会验证服务器状态，并继续<下一步>。
+```
+
+When there is no action URL, replace the link with one bold, explicit reply
+instruction such as `**请回复：确认批准**`. Never fabricate a URL or button.
+
 ## Secret rules
 
 - Never run with shell tracing.

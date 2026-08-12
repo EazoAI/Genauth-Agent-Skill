@@ -85,6 +85,17 @@ its own loopback port.
 
 The returned `authorization_url` is bound to both the request and selected user pool. Give it only to the target human. GenAuth performs login and renders the exact Agent, audience, permission list, and expiry. Do not open, approve, or deny the page on the human's behalf.
 
+Present a pending explicit authorization using the shared Chinese human-action
+block. The heading must be `## ⚠️ 需要你操作：完成用户授权`, followed by `请现在
+点击下面的授权链接完成确认。`, a table containing the Agent, target user,
+user pool, requested permissions, expiry, and `PENDING` request ID, then one
+standalone bold link labeled `立即打开授权页面`. Tell the human to log in,
+review the permissions, and click the page's allow action. State the exact
+business step that will continue after `authorizations wait` verifies
+`APPROVED`. Never describe explicit user consent as an administrator approval,
+and never output a plain English paragraph such as `Please open ... Waiting for
+consent`.
+
 Capture the authorization request ID from the returned `data`, not from URL
 text. On resume, fetch it with `authorizations get --authorization-id <id>`.
 After completion, fetch `grants list` and match exact subject,

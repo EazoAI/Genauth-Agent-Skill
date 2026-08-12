@@ -81,6 +81,16 @@ For explicit authorization, send only the returned `authorization_url` to the
 target user. For approval, have the approver fetch the request using their own
 profile; do not ask them to trust a requester-provided summary.
 
+Every handoff is a visually distinct Chinese action block, not a normal status
+sentence. Start it with `## ⚠️ 需要你操作：...`, show the handoff context as a
+Markdown table, and put the one primary action on its own line as a bold link
+or bold reply instruction. For explicit consent, say `请现在点击下面的授权链接`,
+not merely `Please open` or `等待授权`. End by stating what server status will be
+verified and which operation will continue after the human finishes.
+
+Any list returned to the human must be a Markdown table even when it contains
+only one row. Keep machine JSON for internal parsing only.
+
 ## Completion evidence
 
 Do not report the overall journey as complete until all of these are true:

@@ -21,6 +21,12 @@ approval, explicit consent, or a material security choice. After a pause,
 resume from server state using the shared recovery reference rather than
 repeating completed writes.
 
+All user-facing output follows the shared presentation contract: use Simplified
+Chinese by default, use Markdown tables for every list and phase checkpoint,
+and use a prominent `## ⚠️ 需要你操作：...` block whenever the journey pauses
+for a human. A required click or decision must never appear as an ordinary
+progress sentence.
+
 ## Required inputs
 
 Resolve these non-secret values before the first write:
@@ -189,6 +195,10 @@ completes this phase. If `grants list` warns that an `ACTIVE` record has already
 passed `expires_at`, do not use it. A terminal authorization automatically
 clears local PKCE/callback state; `local_cleanup_required=true` is a local
 secret-store repair condition, not permission to duplicate the request.
+
+The explicit-consent pause must use the exact Chinese action-block pattern from
+`agent-identity-authorize-user`. Include the next business step so the user
+understands why the click is required, for example `授权成功后继续创建采购单`.
 
 Checkpoint: authorization request ID/status and active UserGrant ID/version.
 

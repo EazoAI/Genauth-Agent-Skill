@@ -44,3 +44,29 @@ has passed; honor the `grants list` warning and never select that grant for a
 runtime call. The CLI automatically removes local one-time authorization state
 after every terminal result. Report `local_cleanup_required=true` as a local
 secret-store repair condition without recreating the authorization request.
+
+For an explicit pending request, output this Chinese handoff shape instead of
+ordinary prose:
+
+```markdown
+## ⚠️ 需要你操作：完成用户授权
+
+请现在点击下面的授权链接，登录后检查权限范围并点击“允许访问”。
+
+| 项目 | 内容 |
+| --- | --- |
+| Agent | <Agent 名称>（`<agent-id>`） |
+| 目标用户 | <目标用户显示信息>（`<target-user-id>`） |
+| 用户池 | <用户池名称>（`<user-pool-id>`） |
+| 申请权限 | <权限名称>（`<permission-id>`） |
+| 授权有效期 | <UserGrant TTL> |
+| 授权请求 | `<authorization-request-id>`（`PENDING`） |
+
+👉 **[立即打开授权页面](<authorization-url>)**
+
+完成后我会自动验证授权结果；确认 `APPROVED` 后继续执行 <next-business-step>。
+```
+
+When several permissions, Agents, grants, or authorization requests are shown,
+use Markdown tables and one row per item. Do not collapse a list into a sentence
+such as `采购单 Full Access (purchase_orders)`.

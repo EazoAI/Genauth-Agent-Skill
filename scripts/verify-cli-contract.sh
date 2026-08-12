@@ -53,6 +53,16 @@ check_flag() {
   fi
 }
 
+check_flag_absent() {
+  command_text="$1"
+  flag="$2"
+  if command_help "$command_text" | grep -Fq -- "$flag"; then
+    fail "forbidden flag is still present: $command_text $flag"
+  else
+    pass "forbidden flag absent: $command_text $flag"
+  fi
+}
+
 version_json="$("$cli" version --output json --non-interactive 2>/dev/null || true)"
 if printf '%s' "$version_json" | grep -Fq '"api_version":"genauth-agent.cli/v1"'; then
   pass "CLI API version genauth-agent.cli/v1"
@@ -123,8 +133,7 @@ done <<EOF
 $commands
 EOF
 
-flag_contracts='auth login|--admin
-auth login|--profile-name
+flag_contracts='auth login|--profile-name
 auth login|--user-pool-id
 agents create|--owner-user-id
 agents create|--application-id
@@ -162,6 +171,8 @@ done <<EOF
 $flag_contracts
 EOF
 
+check_flag_absent 'auth login' '--admin'
+
 for skill_file in "$repo_dir"/agent-identity-*/SKILL.md; do
   skill_dir="$(basename "$(dirname "$skill_file")")"
   declared_name="$(sed -n 's/^name: //p' "$skill_file" | head -n 1)"
@@ -177,6 +188,17 @@ if rg -n '(^|[[:space:]])curl[[:space:]]|/api/v3/agent-identity|/api/v3/agent-ru
   fail "a Skill contains a direct API invocation or route"
 else
   pass "Skills contain no direct Agent Identity/Runtime API invocation"
+fi
+
+if rg -Fq 'Default to Simplified Chinese' \
+  "$repo_dir/agent-identity-shared/SKILL.md" && \
+  rg -Fq '## ⚠️ 需要你操作' \
+  "$repo_dir/agent-identity-shared/SKILL.md" && \
+  rg -Fq '立即打开授权页面' \
+  "$repo_dir/agent-identity-authorize-user/SKILL.md"; then
+  pass "user-facing Chinese action and table presentation contract"
+else
+  fail "missing user-facing Chinese action and table presentation contract"
 fi
 
 if [ "$failures" -ne 0 ]; then
