@@ -1,6 +1,6 @@
 ---
 name: agent-identity-authorize-user
-version: 2.0.0
+version: 2.0.1
 description: "Create explicit or policy-allowed silent Agent user authorization and wait for the resulting UserGrant."
 metadata:
   requires:
@@ -24,12 +24,15 @@ the authoritative GenAuth eligibility decision. Stop on
 `SILENT_AUTHORIZATION_NOT_ALLOWED`, `SUBJECT_INACTIVE`, or
 `POLICY_DECISION_DENIED`; do not retry with another target or mode.
 
-For an explicit same-workstation flow, prefer the CLI-managed loopback callback
-and `--open-browser`. For a different workstation, also use the default
-loopback request, return the user-pool-bound `authorization_url` to the target
-human, and run `authorizations wait` on the requester's workstation. After the
-browser records consent, the CLI completes the exchange through authenticated
-PKCE-bound polling; no cross-device authorization-code handoff is needed. Use
+For an explicit same-workstation flow, execute the CLI-managed loopback request
+with `--open-browser`, keep the command attached, and continue automatically
+after server-confirmed approval. Do not ask the human to reply after clicking
+allow. For a different workstation, also use the default loopback request,
+return the user-pool-bound `authorization_url` to the target human, and
+immediately run `authorizations wait` on the requester's workstation. Keep
+polling instead of waiting for a chat reply. After the browser records consent,
+the CLI completes the exchange through authenticated PKCE-bound polling; no
+cross-device authorization-code handoff is needed. Use
 a registered HTTPS callback only for an existing standard callback client. A
 browser or CLI denial is terminal. Treat exit `6` as pending and never handle a
 one-time code in chat, logs, files, or command history.
@@ -45,8 +48,10 @@ runtime call. The CLI automatically removes local one-time authorization state
 after every terminal result. Report `local_cleanup_required=true` as a local
 secret-store repair condition without recreating the authorization request.
 
-For an explicit pending request, output this Chinese handoff shape instead of
-ordinary prose:
+For a cross-device, browser-open failure, or timed-out explicit request, output
+this Chinese fallback handoff shape instead of ordinary prose. Start
+`authorizations wait` immediately after showing it; the user does not need to
+reply in chat:
 
 ```markdown
 ## ⚠️ 需要你操作：完成用户授权

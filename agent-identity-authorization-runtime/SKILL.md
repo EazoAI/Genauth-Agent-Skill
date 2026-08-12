@@ -1,6 +1,6 @@
 ---
 name: agent-identity-authorization-runtime
-version: 2.0.0
+version: 2.0.1
 description: "Manage Agent Credentials, explicit or silent user authorization, UserGrants, short-lived Agent Tokens, and GenAuth Provider calls through the Agent Identity CLI."
 metadata:
   requires:
@@ -76,23 +76,47 @@ genauth-agent --timeout 10m authorizations wait --authorization-id <request-id>
 
 Omitting `--redirect-uri` creates a random registered loopback callback and is
 safe for both same- and different-workstation flows. On the same workstation,
-`authorizations create --open-browser` opens the page and waits. On a different
-workstation, return the URL to the target human and run `authorizations wait` on
-the requester's workstation. After consent, the requester proves possession of
-the PKCE verifier and completes the exchange by authenticated polling; the
-target browser receives only a completion page and never needs to connect to
-its own loopback port.
+always prefer `authorizations create --open-browser`: execute it yourself,
+keep the command attached while the human reviews the page, and continue
+automatically after it returns `APPROVED`. Do not ask the human to reply after
+clicking allow. On a different workstation, return the URL to the target human
+and immediately run `authorizations wait` on the requester's workstation; keep
+polling instead of waiting for a chat reply. After consent, the requester proves
+possession of the PKCE verifier and completes the exchange by authenticated
+polling; the target browser receives only a completion page and never needs to
+connect to its own loopback port.
+
+Use this same-workstation shape, with the normal JSON flags and a timeout long
+enough for human interaction:
+
+```bash
+genauth-agent --profile <profile> --timeout 10m authorizations create \
+  --agent-id <agent-id> \
+  --user-id <exact-target-user-id> \
+  --audience <audience> \
+  --permission-id <policy-id> \
+  --mode explicit --open-browser --output json --non-interactive
+```
+
+`--non-interactive` is safe here because the human interaction occurs in the
+opened browser; it does not convert explicit authorization into silent mode.
+If the command yields a running process, wait on that process. Exit `6` remains
+pending: preserve the request ID and resume with `authorizations wait
+--open-browser` when local URL state is available, otherwise wait without
+reopening the page.
 
 The returned `authorization_url` is bound to both the request and selected user pool. Give it only to the target human. GenAuth performs login and renders the exact Agent, audience, permission list, and expiry. Do not open, approve, or deny the page on the human's behalf.
 
 Present a pending explicit authorization using the shared Chinese human-action
-block. The heading must be `## ⚠️ 需要你操作：完成用户授权`, followed by `请现在
+block only for cross-device, browser-open failure, or timeout recovery. The
+heading must be `## ⚠️ 需要你操作：完成用户授权`, followed by `请现在
 点击下面的授权链接完成确认。`, a table containing the Agent, target user,
 user pool, requested permissions, expiry, and `PENDING` request ID, then one
 standalone bold link labeled `立即打开授权页面`. Tell the human to log in,
 review the permissions, and click the page's allow action. State the exact
 business step that will continue after `authorizations wait` verifies
-`APPROVED`. Never describe explicit user consent as an administrator approval,
+`APPROVED`. Start that wait immediately and do not ask for a chat reply. Never
+describe explicit user consent as an administrator approval,
 and never output a plain English paragraph such as `Please open ... Waiting for
 consent`.
 

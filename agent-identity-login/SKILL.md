@@ -1,6 +1,6 @@
 ---
 name: agent-identity-login
-version: 2.0.0
+version: 2.0.1
 description: "Authenticate the Agent Identity CLI tenant administrator through GenAuth browser login and select a manageable user pool."
 metadata:
   requires:
@@ -18,6 +18,13 @@ pool before starting browser login. Start with:
 ```bash
 genauth-agent auth login --endpoint <genauth-origin> --profile-name <profile>
 ```
+
+Run this command directly on the same workstation. It opens the browser and
+waits for login; keep the process attached, tell the human you are waiting, and
+continue automatically after the command succeeds and `auth status` confirms
+the session. Do not tell the human to copy the command or reply `完成了`.
+Only fall back to a URL handoff when local browser opening is unavailable or
+the login must happen on another workstation.
 
 GenAuth discovers the dedicated root-user-pool OIDC client from the endpoint.
 After authentication, the CLI auto-selects the only manageable user pool. If

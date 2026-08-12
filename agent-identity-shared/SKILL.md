@@ -1,6 +1,6 @@
 ---
 name: agent-identity-shared
-version: 2.0.0
+version: 2.0.1
 description: "Agent Identity CLI shared authentication, selected user-pool context, JSON contract, errors, and secret-safety rules. Read before any other genauth-agent skill."
 metadata:
   requires:
@@ -41,11 +41,19 @@ Run:
 genauth-agent auth status
 ```
 
-If it returns exit `3`, ask the user to complete this browser flow themselves:
+If it returns exit `3` on the same workstation, execute this interactive
+browser flow yourself and keep the command attached:
 
 ```bash
 genauth-agent auth login --endpoint <genauth-origin> --profile-name <profile>
 ```
+
+The CLI opens GenAuth in the browser and waits for the loopback callback. Tell
+the human that the browser is open and that you are waiting, but do not ask
+them to run the command or reply after login. Poll the still-running command;
+when it exits successfully, verify with JSON `auth status` and continue the
+original workflow automatically. Use a URL handoff only when the browser
+cannot be opened locally or the human is on another workstation.
 
 Do not request, accept, or type a password. An existing session may be imported only through stdin with `--session-token-stdin`; never put a session Token on the command line.
 
@@ -114,6 +122,14 @@ Skill:
   documented command. Do not merely say `Please open`, `Waiting for consent`,
   or their Chinese equivalents without the prominent heading and explicit
   instruction.
+- On the same workstation, a browser action is normally an in-progress command,
+  not a turn-ending handoff. Run the documented CLI command that opens the URL,
+  keep waiting or polling in the same workflow, and continue automatically
+  after server-confirmed success. Do not ask the human to reply `完成了`.
+- Use the action-block link as a fallback for cross-device operation, disabled
+  browser opening, or a timed-out/pending command. Even then, start the
+  documented wait command immediately and resume from its result; a chat reply
+  is not the completion signal.
 
 Use this structure, replacing every placeholder with current non-secret data:
 

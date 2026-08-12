@@ -1,6 +1,6 @@
 ---
 name: agent-identity-auth
-version: 2.0.0
+version: 2.0.1
 description: "Use for Agent Identity CLI login, logout, status, profile selection, and tenant administrator user-pool switching."
 metadata:
   requires:
@@ -42,7 +42,14 @@ default makes actor confusion more likely. Even for the user-pool root
 administrator self-approval exception, carry the profile explicitly and let
 the server prove the role.
 
-Browser authorization is a human step. Return the printed GenAuth URL to the user and wait; do not attempt to fill credentials, collect passwords, or claim success before `auth status` succeeds.
+Browser authorization is a human step, but on the same workstation the Agent
+must execute `auth login` itself. The CLI opens the GenAuth URL and remains
+attached to the loopback callback. Keep waiting for that command, then verify
+JSON `auth status` and continue automatically; do not ask the human to run the
+command or reply after login. Return the printed URL only as a fallback when
+local browser opening is unavailable or the login is happening on another
+workstation. Never fill credentials, collect passwords, or claim success
+before `auth status` succeeds.
 
 When switching a user pool, rely on the CLI's server-side validation. A changed local file or profile display alone is not proof that the administrator can manage that pool.
 
